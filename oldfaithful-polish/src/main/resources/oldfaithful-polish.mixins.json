@@ -1,0 +1,58 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.studioquire.oldfaithful.polish.mixin",
+  "plugin": "org.studioquire.oldfaithful.polish.PolishConfig",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "animals.AnimalEntityMixin",
+    "animals.EggEntityMixin",
+    "animals.LivingEntityMixin",
+    "animals.PlayerEntityMixin",
+    "autosave.RegionChunkStorageMixin",
+    "autosave.RegionIoMixin",
+    "boathandling.BoatEntityMixin",
+    "boats.BoatEntityMixin",
+    "chests.BlockMixin",
+    "glowstone.PlayerInventoryMixin",
+    "lava.FlowingLiquidBlockMixin",
+    "leaves.LeavesBlockItemMixin",
+    "leaves.LeavesBlockMixin",
+    "minecarts.MinecartEntityMixin",
+    "stairs.StairsBlockMixin",
+    "watersources.FlowingLiquidBlockMixin"
+  ],
+  "client": [
+    "autosave.ChunkCacheMixin",
+    "bow.PlayerEntityRendererMixin",
+    "bow.UndeadEntityRendererMixin",
+    "chests.ChestBlockMixin",
+    "dusk.ChunkBuilderMixin",
+    "dusk.GameRendererMixin",
+    "dusk.LiquidBlockMixin",
+    "dusk.ParticleManagerMixin",
+    "dusk.TessellatorMixin",
+    "dusk.WorldMixin",
+    "dusk.WorldRegionMixin",
+    "dusk.WorldRendererMixin",
+    "edition.BrandingMixin",
+    "edition.OptionsScreenMixin",
+    "edition.SettingsScreenMixin",
+    "glowstone.ClientNetworkHandlerMixin",
+    "itemsize.ItemRendererMixin",
+    "skins.HeldItemRendererMixin",
+    "skins.ModelPartAccessor",
+    "skins.PlayerEntityRendererMixin",
+    "skins.SkinsMixin",
+    "skins.TextureManagerAccessor",
+    "skins.WorldRendererMixin",
+    "texturepacks.TitleScreenMixin"
+  ],
+  "server": [
+    "autosave.ServerChunkCacheMixin",
+    "glowstone.ServerLoginNetworkHandlerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

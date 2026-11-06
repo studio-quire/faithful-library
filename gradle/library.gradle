@@ -1,0 +1,138 @@
+// The Faithful Library's release (docs/release.md): optional mods on the editions, public from 0.1.0 in its own repository
+// (this file, the core, the mods and their texts are in none of the editions' snapshots).
+// `./gw releaseLibrary` builds into local/release/faithful-library-<v>/, with SHA256SUMS.txt: a library pack and a server
+// package for Old Faithful and for Still Faithful (no Pure one, since Pure plus mods isn't Pure), and each mod, Faithful Core
+// and Faithful Settings on their own. Nothing here publishes anything. Like Still Faithful's, it ships on released editions:
+// their parts must be their releases', byte for byte, and a release folder never changes silently.
+//
+// A library pack is the edition's pack with every library jar in .minecraft/mods-library/ and an empty list, so it plays as
+// the edition until the player ticks a mod in the settings' Mods menu (docs/library-authoring.md > Settings). A library server
+// package likewise: the edition's, with the jars in mods-library/ to move into mods/.
+
+if (findProject(':oldfaithful-core') == null || !releaseEditions.containsKey('still')) return
+
+// A new mod of the library must be placed here on purpose; test-only mods say library_test=true.
+def libraryMods = ['better-dungeons', 'no-toasts', 'plain-f3', 'water-bottles', 'world-rules']
+def unlisted = subprojects.findAll {
+    def props = it.file('gradle.properties')
+    it.path.startsWith(':library:') && it.file('build.gradle').isFile() && props.isFile() && !props.text.contains('library_test=true') && !(it.name in libraryMods)
+}
+if (unlisted) throw new GradleException("Library mods missing from gradle/library.gradle's libraryMods: ${unlisted*.name}")
+
+def libraryVersion = library_version
+def pure = releaseEditions.pure
+def fixed = releaseEditions.fixed
+def still = releaseEditions.still
+def libraryOut = "local/release/faithful-library-${libraryVersion}".toString()
+// The icon is the edition's seal, unchanged, with a thin ring of its own colour around it (tools/library_icons.py).
+def libraryEdition = { String key, Map ed, String line ->
+    releaseEditions[key] = [
+        name: "${ed.name} with the Faithful Library".toString(), fileName: "${ed.fileName}-Library".toString(),
+        tagline: "plays as ${ed.name} until you tick a mod".toString(), repo: library_release_repo, homepage: library_release_homepage,
+        version: libraryVersion, icon: "faithfullibrary-${key == 'libraryOld' ? 'old' : 'still'}".toString(), licenceFolder: 'faithful-library',
+        iconFile: "faithfullibrary-${key == 'libraryOld' ? 'old' : 'still'}.png".toString(),
+        mods: ed.mods, serverMods: ed.serverMods, serverModsText: ed.serverModsText,
+        packReadme: 'release/library/pack-README.txt', serverReadme: 'release/library/server-README.txt',
+        packHeader: 'release/library/notices-header-pack.txt', serverHeader: 'release/library/notices-header-server.txt',
+        extraJvmArgs: ', "-Dfabric.addMods=@mods-library/selection.txt"',
+        editionName: ed.name, editionVersion: ed.version, editionLine: line, editionRepo: ed.repo,
+        openalSources: "sources/openal-soft-${openal_version}-sources.zip".toString(),
+        out: libraryOut]
+    releaseEditions[key]
+}
+def libraryOld = libraryEdition('libraryOld', fixed, "${fixed.name} ${fixed.version} (on ${pure.name} ${pure.version})".toString())
+def libraryStill = libraryEdition('libraryStill', still, "${still.name} ${still.version} (on ${fixed.name} ${fixed.version} and ${pure.name} ${pure.version})".toString())
+
+def libraryJars = { List<String> mods -> [project(':oldfaithful-core').tasks.named('remapJar')] + mods.collect { project(":library:${it}").tasks.named('remapJar') } }
+// Plain F3 and No Toasts are client-only, so a server package has no use for them.
+def serverSideMods = libraryMods.findAll { new groovy.json.JsonSlurper().parse(file("library/${it}/src/main/resources/fabric.mod.json")).environment != 'client' }
+def settingsJar = { project(':oldfaithful-settings').tasks.named('remapJar') }
+def outDir = layout.buildDirectory.dir('release/out-library')
+
+def libraryPack = { String taskName, Map ed ->
+    def pack = releasePackTask(taskName, ed)
+    pack.configure {
+        // Named without their versions: the list a launch reads has to stay right when a pack update replaces a jar.
+        libraryJars(libraryMods).each { jar -> from(jar) { into '.minecraft/mods-library'; rename { it.replaceFirst(/-\d.*\.jar$/, '.jar') } } }
+        // The list starts empty: nothing is on until the player says.
+        from('release/library/selection.txt') { into '.minecraft/mods-library' }
+        destinationDirectory = outDir
+    }
+    pack
+}
+def libraryServer = { String taskName, Map ed ->
+    def server = releaseServerTask(taskName, ed)
+    server.configure {
+        into("${ed.fileName}-server/mods-library") {
+            from(settingsJar())
+            libraryJars(serverSideMods).each { from(it) }
+        }
+        destinationDirectory = outDir
+    }
+    server
+}
+def packOld = libraryPack('releasePackLibraryOld', libraryOld)
+def packStill = libraryPack('releasePackLibraryStill', libraryStill)
+def serverOld = libraryServer('releaseServerLibraryOld', libraryOld)
+def serverStill = libraryServer('releaseServerLibraryStill', libraryStill)
+
+def sha256 = { File f -> java.security.MessageDigest.getInstance('SHA-256').digest(f.bytes).encodeHex().toString() }
+def testBuild = project.hasProperty('release.test')
+def modJars = { List<String> mods -> mods.collect { project(":${it}").tasks.named('remapJar') } }
+def componentJar = { project(':oldfaithful-lwjgl').tasks.named('bakeLwjgl').flatMap { it.output } }
+
+// The library carries the editions' parts as their releases have them: each checked against that release's SHA256SUMS.txt,
+// and a missing release folder stops it too. A test build (-Prelease.test, into faithful-library-<version>-test/) warns instead.
+def partsCheck = tasks.register('releaseLibraryPartsCheck') {
+    description = 'Checks that the library packs\' Pure, Old and Still Faithful parts are those of the releases they name.'
+    def pureJars = modJars(pure.mods)
+    def fixedJars = modJars(fixed.mods - pure.mods)
+    def stillJars = modJars(still.mods - fixed.mods)
+    dependsOn pureJars, fixedJars, stillJars, componentJar()
+    outputs.upToDateWhen { false }
+    doLast {
+        def problems = []
+        def compare = { Map ed, Map<String, File> ours ->
+            def sums = file("${ed.out}/SHA256SUMS.txt")
+            if (!sums.isFile()) { problems << "${ed.name} ${ed.version} isn't in ${ed.out}/".toString(); return }
+            def released = sums.readLines().findAll { it.trim() }.collectEntries { def p = it.split(/\s+/, 2); [p[1], p[0]] }
+            def differ = ours.findAll { name, f -> released[name] != sha256(f) }.keySet()
+            if (differ) problems << "${ed.name}'s parts differ from its ${ed.version} release (${differ.join(', ')})".toString()
+            else logger.lifecycle("${ed.name}'s parts are its ${ed.version} release's, byte for byte.")
+        }
+        def jarFiles = { List jars -> jars.collectEntries { def f = it.get().output.get().asFile; [f.name, f] } }
+        def pureParts = jarFiles(pureJars)
+        pureParts["purefaithful-lwjgl-${pure.version}.jar".toString()] = componentJar().get().asFile
+        compare(pure, pureParts)
+        compare(fixed, jarFiles(fixedJars))
+        compare(still, jarFiles(stillJars))
+        if (problems) {
+            def what = problems.join('; ') + ": the library must ship on released editions, so release new versions of them with it (docs/release.md > Versions)."
+            if (!testBuild) throw new GradleException(what + " For a test build, -Prelease.test.")
+            logger.warn("TEST BUILD, not for publishing: " + what)
+        }
+    }
+}
+
+tasks.register('releaseLibrary', Sync) {
+    group = 'oldfaithful'
+    description = 'Builds the Faithful Library\'s release into local/release/faithful-library-<version>/. Publishes nothing.'
+    dependsOn partsCheck
+    from(packOld)
+    from(packStill)
+    from(serverOld)
+    from(serverStill)
+    libraryJars(libraryMods).each { from(it) }
+    from(settingsJar())
+    // A test build goes beside the real one, so the release folder only ever holds a checked build.
+    into layout.projectDirectory.dir(libraryOut + (testBuild ? '-test' : ''))
+    preserve { include 'SHA256SUMS.txt' }
+    if (!testBuild) guardRelease(it, 'the Faithful Library', libraryVersion, 'library_version')
+    doLast {
+        def lines = destinationDir.listFiles().findAll { it.isFile() && it.name != 'SHA256SUMS.txt' }.sort { it.name }
+                .collect { "${sha256(it)}  ${it.name}" }
+        new File(destinationDir, 'SHA256SUMS.txt').setText(lines.join('\n') + '\n', 'UTF-8')
+        logger.lifecycle("Faithful Library ${libraryVersion}: ${destinationDir}")
+        lines.each { logger.lifecycle("  ${it}") }
+    }
+}
