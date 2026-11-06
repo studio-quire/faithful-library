@@ -5,9 +5,9 @@
 // and Faithful Settings on their own. Nothing here publishes anything. Like Still Faithful's, it ships on released editions:
 // their parts must be their releases', byte for byte, and a release folder never changes silently.
 //
-// A library pack is the edition's pack with every library jar in .minecraft/mods-library/ and an empty list, so it plays as
-// the edition until the player ticks a mod in the settings' Mods menu (docs/library-authoring.md > Settings). A library server
-// package likewise: the edition's, with the jars in mods-library/ to move into mods/.
+// A library pack is the edition's pack with every library jar in .minecraft/mods-library/ and all of them on its list, each with
+// a switch in the settings' Mods menu (docs/library-authoring.md > Settings). A library server package is the edition's, with the
+// jars in mods-library/ to move into mods/, so a server takes on nothing until its owner says.
 
 if (findProject(':oldfaithful-core') == null || !releaseEditions.containsKey('still')) return
 
@@ -24,13 +24,12 @@ def pure = releaseEditions.pure
 def fixed = releaseEditions.fixed
 def still = releaseEditions.still
 def libraryOut = "local/release/faithful-library-${libraryVersion}".toString()
-// The icon is the edition's seal, unchanged, with a thin ring of its own colour around it (tools/library_icons.py).
+// The icon is the edition's own seal; only the site's card has a glow around them (tools/library_card.py).
 def libraryEdition = { String key, Map ed, String line ->
     releaseEditions[key] = [
         name: "${ed.name} with the Faithful Library".toString(), fileName: "${ed.fileName}-Library".toString(),
-        tagline: "plays as ${ed.name} until you tick a mod".toString(), repo: library_release_repo, homepage: library_release_homepage,
-        version: libraryVersion, icon: "faithfullibrary-${key == 'libraryOld' ? 'old' : 'still'}".toString(), licenceFolder: 'faithful-library',
-        iconFile: "faithfullibrary-${key == 'libraryOld' ? 'old' : 'still'}.png".toString(),
+        tagline: "every mod on, each with its own switch", repo: library_release_repo, homepage: library_release_homepage,
+        version: libraryVersion, icon: ed.icon, licenceFolder: 'faithful-library',
         mods: ed.mods, serverMods: ed.serverMods, serverModsText: ed.serverModsText,
         packReadme: 'release/library/pack-README.txt', serverReadme: 'release/library/server-README.txt',
         packHeader: 'release/library/notices-header-pack.txt', serverHeader: 'release/library/notices-header-server.txt',
@@ -49,13 +48,20 @@ def serverSideMods = libraryMods.findAll { new groovy.json.JsonSlurper().parse(f
 def settingsJar = { project(':oldfaithful-settings').tasks.named('remapJar') }
 def outDir = layout.buildDirectory.dir('release/out-library')
 
+// Every mod on, and the core they need. Generated, so a new mod in libraryMods is on the list too.
+def librarySelection = tasks.register('librarySelection') {
+    def list = layout.buildDirectory.file('library-selection/release/selection.txt')
+    def names = (['faithful-core'] + libraryMods).sort()
+    inputs.property('names', names)
+    outputs.file(list)
+    doLast { list.get().asFile.setText(names.collect { "mods-library/${it}.jar" }.join('\n') + '\n', 'UTF-8') }
+}
 def libraryPack = { String taskName, Map ed ->
     def pack = releasePackTask(taskName, ed)
     pack.configure {
         // Named without their versions: the list a launch reads has to stay right when a pack update replaces a jar.
         libraryJars(libraryMods).each { jar -> from(jar) { into '.minecraft/mods-library'; rename { it.replaceFirst(/-\d.*\.jar$/, '.jar') } } }
-        // The list starts empty: nothing is on until the player says.
-        from('release/library/selection.txt') { into '.minecraft/mods-library' }
+        from(librarySelection) { into '.minecraft/mods-library' }
         destinationDirectory = outDir
     }
     pack

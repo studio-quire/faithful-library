@@ -3,13 +3,14 @@
 This folder is a Prism Launcher instance. Prism downloads Minecraft beta 1.7.3 itself, from Mojang, the first time
 you launch it; everything else is already here. You need a Minecraft account that owns the game.
 
-It's @EDITION_NAME@'s own pack with the Faithful Library's mods in .minecraft/mods-library, all off. Until you turn
-one on it plays exactly as @EDITION_NAME@ does: none of the library's code is loaded, and nothing new goes over the
-network. @EDITION_LINE@ is what's underneath.
+It's @EDITION_NAME@'s own pack with the Faithful Library's mods in .minecraft/mods-library, all on.
+@EDITION_LINE@ is what's underneath.
 
-Turning a mod on: in the game, Options > @EDITION_NAME@... > Mods... lists them. Each has a page with an Enabled switch,
-which takes effect the next time you launch. Faithful Core, which the mods build on, comes on by itself when any mod is
-on and goes off when none is. The switches are kept in .minecraft/mods-library/selection.txt.
+Turning a mod off or on: in the game, Options > @EDITION_NAME@... > Mods... lists them. Each has a page with an Enabled
+switch, which takes effect the next time you launch. Faithful Core, which the mods build on, comes on by itself when any
+mod is on and goes off when none is. With all of them off the pack plays exactly as @EDITION_NAME@ does: none of the
+library's code is loaded, and nothing new goes over the network. The switches are kept in
+.minecraft/mods-library/selection.txt.
 
 The mods:
 - World Rules: rules for each world, on its page in Mods... and on Create World's World Rules... page: Mobs Break Blocks,

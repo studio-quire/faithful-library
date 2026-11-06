@@ -872,7 +872,7 @@ if (findProject(':library:dungeon-check') != null) {
         if (gameJava.isPresent()) javaExecutable = gameJava
     }
 }
-// The library's packs and server packages as they ship (LibraryPackTestTask): nothing ticked, no list, everything ticked, and each stage of a server's mods.
+// The library's packs and server packages as they ship (LibraryPackTestTask): as shipped with everything on, nothing ticked, no list, and each stage of a server's mods.
 ['Old': [pack: 'releasePackLibraryOld', server: 'releaseServerLibraryOld', args: []],
  'Still': [pack: 'releasePackLibraryStill', server: 'releaseServerLibraryStill', args: ["-Doldfaithful.selftest.edition=Still Faithful:stillfaithful-polish".toString()]]].each { label, p ->
     if (!rootProject.tasks.names.contains(p.pack)) return
@@ -898,7 +898,7 @@ if (findProject(':library:dungeon-check') != null) {
     def libraries = unpacked.map { fileTree(it.destinationDir) { include 'libraries/*.jar'; exclude 'libraries/*natives*.jar', 'libraries/intermediary-*.jar' } }
     tasks.register("libraryPackTest${label}", oldfaithful.gradle.LibraryPackTestTask) {
         group = 'verification'
-        description = "The ${label} Faithful library pack and server package from a release: nothing ticked, everything ticked, and a server at each stage."
+        description = "The ${label} Faithful library pack and server package from a release: as shipped, nothing ticked, and a server at each stage."
         dependsOn packNatives, unpackedServer
         it.label = label
         instance = layout.dir(unpacked.map { it.destinationDir })

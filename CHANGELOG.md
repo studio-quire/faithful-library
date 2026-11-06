@@ -4,6 +4,14 @@ The Faithful Library's releases, newest first. One version number for Faithful C
 packs and server packages. Each names the edition releases its packs are built on, whose mods and LWJGL are inside as
 those releases have them, and Faithful Settings is Old Faithful's. Entries say what a player or server owner notices.
 
+## 0.1.1 (2026-11-06)
+
+Library packs for Old Faithful 0.2.0 and Still Faithful 0.2.1, on Pure Faithful 0.1.3.
+
+- The packs now start with every mod on. Each still has its Enabled switch in the settings' Mods menu. The server packages
+  are as they were: a server turns on what its owner moves into `mods/`.
+- The packs' icons are now the editions' own seals.
+
 ## 0.1.0 (2026-11-05)
 
 The first release, a pre-release. Library packs for Old Faithful 0.2.0 and Still Faithful 0.2.1, on Pure Faithful 0.1.3,

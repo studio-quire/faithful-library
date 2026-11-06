@@ -2,9 +2,10 @@
 
 **optional mods for beta 1.7.3**
 
-Mods you can turn on one at a time over [Old Faithful](https://github.com/studio-quire/old-faithful) and
+Mods over [Old Faithful](https://github.com/studio-quire/old-faithful) and
 [Still Faithful](https://github.com/studio-quire/still-faithful), in any combination, in single player and on servers.
-A library pack plays exactly as its edition until you turn a mod on. Open source, from
+A library pack comes with all of them on, and each has a switch; with every one off it plays exactly as its edition.
+Open source, from
 [Studio Quire](https://studioquire.org/).
 
 They're mods, not a modified game: your launcher downloads Minecraft itself from Mojang, with your own account. Nothing
@@ -42,7 +43,7 @@ You need a Minecraft account that owns the game, and [Prism Launcher](https://pr
 4. In the game: **Options > Old Faithful... > Mods...** (Still Faithful... in that pack). Each mod's page has an
    **Enabled** switch, which takes effect the next time you launch.
 
-All the mods start off. Faithful Core comes on by itself when any mod is on, and goes off when none is. The jars wait in
+All the mods start on. Faithful Core comes on by itself when any mod is on, and goes off when none is. The jars are in
 `.minecraft/mods-library`, and the switches are kept in `.minecraft/mods-library/selection.txt`.
 
 There's no library pack for Pure Faithful, since Pure Faithful plus mods isn't Pure Faithful. Its mods can still run

@@ -30,9 +30,9 @@ import org.gradle.api.tasks.TaskAction;
 
 /**
  * A release's library pack and server package, unpacked as they ship (gradle/library.gradle), each launched with the arguments the pack's own component
- * gives. With nothing ticked: the edition's whole start-up test, none of the library's code present, the login a vanilla client's, the Mods menu offering
- * every mod, and ticks written for the next launch. With no list at all, the same. With everything ticked: all of it loaded, in a new world. Then the server package
- * as it comes (a raw vanilla client hears nothing new, the pack's plain client plays), with the server-side mods but Water Bottles (still any client),
+ * gives. As shipped: every mod on the list, the edition's whole start-up test with all of it loaded, in a new world. With nothing ticked: the same test, none of the
+ * library's code present, the login a vanilla client's, the Mods menu offering every mod, and ticks written for the next launch. With no list at all, the same. Then the
+ * server package as it comes (a raw vanilla client hears nothing new, the pack plays there both as shipped and with nothing on), with the server-side mods but Water Bottles (still any client),
  * with all of them (vanilla refused, a plain pack refused, a pack with a mod on told what's missing and offered the server's set, a pack with everything
  * admitted), and with Water Bottles taken out again (the server refuses to start, then goes on when told). Prism itself isn't run here.
  */
@@ -78,10 +78,22 @@ public abstract class LibraryPackTestTask extends ClientStartupTask {
 		packArgs = jvmArgs(instance);
 		expect("the pack's component launches with the list: " + packArgs, packArgs.contains("-Dfabric.addMods=@" + LIST));
 
+		Path shipped = game(run, "as-shipped", instance);
+		expect("the pack ships every mod on", Files.readString(shipped.resolve(LIST)).equals(allOn()));
+		lines.add("--- as shipped, everything on, a new world: the edition's whole start-up test");
+		List<String> played = launch(shipped, false, args("-Doldfaithful.selftest.libraryPack=on", "-Doldfaithful.selftest.expectSize=1000x600", "-Dorg.prismlauncher.window.dimensions=1000x600", "-Doldfaithful.selftest.expectMaximized=false"), failures);
+		lines.addAll(played);
+		for (String id : List.of("faithful-core", "better-dungeons", "no-toasts", "plain-f3", "water-bottles", "world-rules")) {
+			expect("as shipped: the loader lists " + id, played.stream().anyMatch(l -> l.contains(id)));
+		}
+		expect("the new world's file has seen Water Bottles", Files.isRegularFile(shipped.resolve("saves/oldfaithful-startup/faithful-world.properties"))
+				&& Files.readString(shipped.resolve("saves/oldfaithful-startup/faithful-world.properties")).contains("mod.water-bottles="));
+		expect("a client with the core says so in its login", loginSeed(run, "login-all", instance, allOn()) == RawClient.CORE_MAGIC);
+
 		Path plain = game(run, "nothing-ticked", instance);
-		expect("the pack ships an empty list", Files.size(plain.resolve(LIST)) == 0);
-		lines.add("--- as shipped, nothing ticked: the edition's whole start-up test");
-		List<String> played = launch(plain, false, args("-Doldfaithful.selftest.libraryPack=off", "-Doldfaithful.selftest.expectSize=1000x600", "-Dorg.prismlauncher.window.dimensions=1000x600", "-Doldfaithful.selftest.expectMaximized=false"), failures);
+		Files.writeString(plain.resolve(LIST), "");
+		lines.add("--- nothing ticked: the edition's whole start-up test");
+		played = launch(plain, false, args("-Doldfaithful.selftest.libraryPack=off", "-Doldfaithful.selftest.expectSize=1000x600", "-Dorg.prismlauncher.window.dimensions=1000x600", "-Doldfaithful.selftest.expectMaximized=false"), failures);
 		lines.addAll(played);
 		expect("nothing ticked: the loader lists no library mod", loadedNothing(played));
 		expect("the ticks were written for the next launch", Files.readAllLines(plain.resolve(LIST)).size() == 6);
@@ -93,18 +105,6 @@ public abstract class LibraryPackTestTask extends ClientStartupTask {
 		played = launch(absent, false, args("-Doldfaithful.selftest.libraryPack=absent", "-Doldfaithful.selftest.settingsOnly=true", "-Doldfaithful.selftest.stallMs=280000"), failures);
 		lines.addAll(played);
 		expect("no list: the loader lists no library mod", loadedNothing(played));
-
-		Path all = game(run, "everything-ticked", instance);
-		Files.copy(plain.resolve(LIST), all.resolve(LIST), StandardCopyOption.REPLACE_EXISTING);
-		lines.add("--- everything ticked, a new world");
-		played = launch(all, false, args("-Doldfaithful.selftest.libraryPack=on", "-Doldfaithful.selftest.settingsOnly=true", "-Doldfaithful.selftest.stallMs=280000"), failures);
-		lines.addAll(played);
-		for (String id : List.of("faithful-core", "better-dungeons", "no-toasts", "plain-f3", "water-bottles", "world-rules")) {
-			expect("everything ticked: the loader lists " + id, played.stream().anyMatch(l -> l.contains(id)));
-		}
-		expect("the new world's file has seen Water Bottles", Files.isRegularFile(all.resolve("saves/oldfaithful-startup/faithful-world.properties"))
-				&& Files.readString(all.resolve("saves/oldfaithful-startup/faithful-world.properties")).contains("mod.water-bottles="));
-		expect("a client with the core says so in its login", loginSeed(run, "login-all", instance, Files.readString(plain.resolve(LIST))) == RawClient.CORE_MAGIC);
 
 		server(run, instance);
 		report("Library pack test (" + getLabel().get() + ")", lines, failures);
@@ -133,6 +133,8 @@ public abstract class LibraryPackTestTask extends ClientStartupTask {
 			}
 			Thread.sleep(5500);
 			expect("the plain pack plays there", tryServer(run, "plain-on-plain", instance, "", port).startsWith("admitted"));
+			Thread.sleep(5500);
+			expect("the pack as shipped plays there", tryServer(run, "shipped-on-plain", instance, allOn(), port).startsWith("admitted"));
 		} finally {
 			stop("as it comes");
 		}
