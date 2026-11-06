@@ -180,6 +180,7 @@ rule for its `stillMods`. The library's two packs are added by `gradle/library.g
   Faithful's check) isn't there. Its own number, `still_edition_version`, started at 0.1.0. So a change to an Old
   Faithful mod (0.1.2 was one: the options mod's partly-live settings, for Still Faithful's Dusk) means an Old
   Faithful release with the Still Faithful that needs it.
+- **Releasing an edition means releasing the library's packs on it too** (user, 2026-11-06): whenever Old Faithful or Still Faithful (or Pure Faithful under them) goes out, a library release follows as part of the same job, so no library pack lags its base.
 - **The Faithful Library ships on released editions** too: `releaseLibrary` checks (`releaseLibraryPartsCheck`) all three editions' parts against their folders, and stops if one differs or isn't there. Its own number, `library_version`, one for the core, the mods and the packs, started at 0.1.0. A library pack carries its edition, so a new edition release means a new library release when players should have it in the pack; the jars on their own don't care. README, changelog and notices name the editions by token, the changelog by hand.
 - **The component must change version whenever its bytes do**, which Pure Faithful's number guarantees (and the
   check above carries into Old Faithful): Prism keeps downloaded libraries in a shared cache by Maven path and never

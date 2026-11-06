@@ -4,6 +4,28 @@ The Faithful Library's releases, newest first. One version number for Faithful C
 packs and server packages. Each names the edition releases its packs are built on, whose mods and LWJGL are inside as
 those releases have them, and Faithful Settings is Old Faithful's. Entries say what a player or server owner notices.
 
+## 0.1.4 (2026-11-06)
+
+Library packs for Old Faithful 0.2.1 and Still Faithful 0.2.2, on Pure Faithful 0.1.3. The packs now carry those releases;
+the library's own mods are unchanged.
+
+From Old Faithful 0.2.1, each on its own switch, under Fixes > Players and Vehicles:
+
+- With a block low overhead (a roof 2 above the floor, say), a step could sink you about a third of a block into the
+  floor or the block ahead, and you were shoved back out. A step now comes down only as far as it went up. Mobs sank
+  the same way and no longer do (Steps Under Roofs).
+- Rejoining a world right against a wall, a rounding slip could put you a hair inside it. You then walked into the wall,
+  suffocating if it reached your eyes, until you were pushed out. The sides of your box now stop at the wall (Rejoining
+  by Walls).
+
+The Rejoining Worlds switch (`world.rejoinTerrain`) is gone: in our tests it made no difference a player would notice,
+and a config file that still names it loads as before.
+[Old Faithful's changelog](https://github.com/studio-quire/old-faithful/blob/main/CHANGELOG.md) has the correction that
+goes with this.
+
+We can't show that these two fixes cover every time you've been moved into a block and pushed out. If it happens again,
+please tell us in an issue where you were and whether anything was overhead.
+
 ## 0.1.3 (2026-11-06)
 
 Library packs for Old Faithful 0.2.0 and Still Faithful 0.2.1, on Pure Faithful 0.1.3.
