@@ -52,8 +52,10 @@ them, as anyone's own setup can (below).
 ## Servers
 
 `OldFaithful-Library-server-<version>.zip` and `StillFaithful-Library-server-<version>.zip` are that edition's server
-package with the library's server-side mods in `mods-library/`. As they come they're the plain edition's server. Move the
-jars you want into `mods/`, with `faithful-core` and `oldfaithful-settings`, which they need; the README inside says more.
+package with the library's server-side mods on in `mods/`, as in the packs. So as they come they refuse a player without
+Water Bottles. Move out of `mods/` the jars you don't want, before the first start; `faithful-core` and
+`oldfaithful-settings` stay while any library mod does. With them all out it's the plain edition's server. The README inside
+says more.
 
 - **World Rules** and **Better Dungeons** run where the world runs, so a server can use them with any client, vanilla
   beta 1.7.3 too. A server with them is the same to a player who hasn't got them. `/rule <name> <value>` for ops and the

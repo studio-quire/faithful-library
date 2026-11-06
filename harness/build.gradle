@@ -872,7 +872,7 @@ if (findProject(':library:dungeon-check') != null) {
         if (gameJava.isPresent()) javaExecutable = gameJava
     }
 }
-// The library's packs and server packages as they ship (LibraryPackTestTask): as shipped with everything on, nothing ticked, no list, and each stage of a server's mods.
+// The library's packs and server packages as they ship (LibraryPackTestTask): as shipped with everything on, nothing ticked, no list, and each stage of a server's mods, as it comes among them.
 ['Old': [pack: 'releasePackLibraryOld', server: 'releaseServerLibraryOld', args: []],
  'Still': [pack: 'releasePackLibraryStill', server: 'releaseServerLibraryStill', args: ["-Doldfaithful.selftest.edition=Still Faithful:stillfaithful-polish".toString()]]].each { label, p ->
     if (!rootProject.tasks.names.contains(p.pack)) return

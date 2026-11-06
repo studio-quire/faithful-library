@@ -177,7 +177,7 @@ Why it can run while the PC is in use:
   clip stops it at once and restores the clip (exit 125); repeated cursor moves with no mouse input behind them stop
   it too (exit 126, best effort: it can't see a warp while the user is moving the mouse). SDL can still release a
   clip (`ClipCursor(NULL)`) on window events if the user's own app has clipped from the desktop's corner; the guard
-  would catch that and put it back. A clip the user's own app sets (the foreground window's process outside the test's job, the clip within that window) is taken as theirs and adopted, not undone (2026-11-03: undoing it let go of the user's game's mouse mid-play). `PRIVATE_DESKTOP_NO_GUARD=1` turns the guard off (the user's call, 2026-11-03:
+  would catch that. The guard only ever clears a clip, never sets one (2026-11-06: putting back a clip held from before the test began pinned the user's cursor to a pixel when their game let go). A clip already there when a test starts is the user's, and so is its release. A clip the user's own app sets (the foreground window's process outside the test's job, the clip within that window) is taken as theirs and adopted, not undone (2026-11-03: undoing it let go of the user's game's mouse mid-play). `PRIVATE_DESKTOP_NO_GUARD=1` turns the guard off (the user's call, 2026-11-03:
   their own game clipping the cursor kept stopping tests; `HandsOff` still keeps the test game from grabbing). When the guard stops a benchmark run, `tools/bench.py` doesn't halt the series
   (user, 2026-11-01: the cursor being taken while they're away doesn't matter, hours of stopped work does): it checks
   the user's idle time (GetLastInputInfo); after three minutes without input they count as away and the run is

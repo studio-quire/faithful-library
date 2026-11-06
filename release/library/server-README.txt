@@ -1,9 +1,10 @@
 @EDITION_NAME@ server with the Faithful Library @VERSION@
 =========================================================
 
-@EDITION_NAME@'s server package, with the Faithful Library's server-side mods in mods-library/, none of them on. As it
-comes it's the plain @EDITION_NAME@ server: Minecraft beta 1.7.3's own server, run through Fabric Loader with our
-@SERVER_MODS@ mods, from @EDITION_LINE@. The library's code isn't loaded and nothing new goes over the network.
+@EDITION_NAME@'s server package, with the Faithful Library's server-side mods in mods/, all on, as they are in the
+library packs: Minecraft beta 1.7.3's own server, run through Fabric Loader with our @SERVER_MODS@ mods, from
+@EDITION_LINE@, and the library. Water Bottles is on, so as it comes this server refuses anyone without it, vanilla clients
+and the plain editions' packs included; the library packs have it. Below is how to take it out.
 
 From the editions: it's hardened against malicious clients, a crash or power cut can't damage the world, and beta's clear
 mistakes are fixed, each on a switch in config/. @EDITION_NAME@'s own README says more: https://github.com/@EDITION_REPO@
@@ -20,10 +21,11 @@ Setting up
 3. Run start.bat (Windows) or start.sh (macOS, Linux). The first start writes server.properties and the world, as
    vanilla does. JAVA picks the java executable and JAVA_OPTS its options (default -Xmx1G).
 
-Turning mods on
-With the server stopped, move the jars you want from mods-library/ into mods/, and with them always
-faithful-core-@VERSION@.jar and oldfaithful-settings-@FIXED_VERSION@.jar, which they need. Taking one back out is
-the same move the other way.
+Turning mods off
+With the server stopped, move the jar out of mods/ into any other folder. faithful-core-@VERSION@.jar and
+oldfaithful-settings-@FIXED_VERSION@.jar stay as long as any library mod does. Do this before the first start for any mod
+you don't want: a world that has seen Water Bottles is asked about below. With all of them out, the core and settings too,
+it's the plain @EDITION_NAME@ server: the library's code isn't loaded and nothing new goes over the network.
 
 - world-rules: rules for each world, the same for everyone on the server. /rule <name> <value> for ops and the console,
   or the world's faithful-world.properties. /rule lock locks them until the line rules-locked=true comes out of that

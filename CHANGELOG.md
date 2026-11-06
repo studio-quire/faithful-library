@@ -4,6 +4,14 @@ The Faithful Library's releases, newest first. One version number for Faithful C
 packs and server packages. Each names the edition releases its packs are built on, whose mods and LWJGL are inside as
 those releases have them, and Faithful Settings is Old Faithful's. Entries say what a player or server owner notices.
 
+## 0.1.2 (2026-11-06)
+
+Library packs for Old Faithful 0.2.0 and Still Faithful 0.2.1, on Pure Faithful 0.1.3.
+
+- The server packages now start with every server-side mod on in `mods/`, to match the packs. With Water Bottles on, a new
+  server refuses players without it, vanilla clients and the plain editions' packs included. Take it out of `mods/` before
+  the first start to keep such a server open to them.
+
 ## 0.1.1 (2026-11-06)
 
 Library packs for Old Faithful 0.2.0 and Still Faithful 0.2.1, on Pure Faithful 0.1.3.

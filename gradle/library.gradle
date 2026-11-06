@@ -6,8 +6,8 @@
 // their parts must be their releases', byte for byte, and a release folder never changes silently.
 //
 // A library pack is the edition's pack with every library jar in .minecraft/mods-library/ and all of them on its list, each with
-// a switch in the settings' Mods menu (docs/library-authoring.md > Settings). A library server package is the edition's, with the
-// jars in mods-library/ to move into mods/, so a server takes on nothing until its owner says.
+// a switch in the settings' Mods menu (docs/library-authoring.md > Settings). A library server package is the edition's with every
+// server-side jar in mods/, so it matches the packs; an owner takes out what they don't want.
 
 if (findProject(':oldfaithful-core') == null || !releaseEditions.containsKey('still')) return
 
@@ -69,7 +69,7 @@ def libraryPack = { String taskName, Map ed ->
 def libraryServer = { String taskName, Map ed ->
     def server = releaseServerTask(taskName, ed)
     server.configure {
-        into("${ed.fileName}-server/mods-library") {
+        into("${ed.fileName}-server/mods") {
             from(settingsJar())
             libraryJars(serverSideMods).each { from(it) }
         }
