@@ -4,6 +4,13 @@ The Faithful Library's releases, newest first. One version number for Faithful C
 packs and server packages. Each names the edition releases its packs are built on, whose mods and LWJGL are inside as
 those releases have them, and Faithful Settings is Old Faithful's. Entries say what a player or server owner notices.
 
+## 0.1.3 (2026-11-06)
+
+Library packs for Old Faithful 0.2.0 and Still Faithful 0.2.1, on Pure Faithful 0.1.3.
+
+- **World Rules**: a new rule, Blasts Destroy Items. On, as in beta, explosions of any kind destroy items lying on the
+  ground. Off, they only throw them.
+
 ## 0.1.2 (2026-11-06)
 
 Library packs for Old Faithful 0.2.0 and Still Faithful 0.2.1, on Pure Faithful 0.1.3.

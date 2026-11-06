@@ -42,7 +42,7 @@ final class ServerScenes {
 		Commands.register("ruletest", "ruletest <scene>: test only", (args, reply) -> {
 			ServerWorld world = (ServerWorld) Server.world(0);
 			switch (args[0]) {
-				case "explosions": explosions(world); break;
+				case "explosions": explosions(world); blastedItems(world); break;
 				case "bed": bed(world, player(args[1])); break;
 				case "bednight": bedAtNight(world, player(args[1])); break;
 				case "night": world.setTime(18000); break;
@@ -163,6 +163,19 @@ final class ServerScenes {
 		TntEntity t = new TntEntity(w, x + 0.5, Y + 1, z + 0.5);
 		t.fuse = 0;
 		t.tick();
+	}
+
+	private static void blastedItems(ServerWorld w) {
+		Vec3i spawn = w.getSpawnPos();
+		double x = spawn.x + 0.5, y = Y + 16, z = spawn.z + 0.5; // high in the air, where the blasts break nothing
+		for (boolean on : new boolean[] {false, true}) {
+			set("blasts_destroy_items", String.valueOf(on));
+			ItemEntity item = new ItemEntity(w, x + 1, y, z, new ItemStack(Item.DIAMOND));
+			w.spawnEntity(item);
+			w.createExplosion(null, x, y, z, 3.0F);
+			check("blasts destroy items " + (on ? "on: the item is gone" : "off: the item is there, and thrown"), on ? item.dead : !item.dead && item.velocityX > 0);
+			item.markDead();
+		}
 	}
 
 	private static void explosions(ServerWorld w) {

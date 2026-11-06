@@ -14,7 +14,7 @@ of Mojang's is in this repository or in our downloads. For Windows now.
 ## The mods
 
 - **World Rules**: rules for each world, on the mod's page in the settings and on Create World's World Rules... page:
-  Mobs Break Blocks, Keep Inventory, Sleeping, Day Length (normal, double, triple), Weather (normal, always clear, always
+  Mobs Break Blocks, Blasts Destroy Items, Keep Inventory, Sleeping, Day Length (normal, double, triple), Weather (normal, always clear, always
   rain or snow), Natural Monsters, Monster Light (monsters appear in dim light as in beta, or not in any torch or lava
   light), Apple Drops (oak leaves, 1 time in 200) and Falling Hit Bonus (beta's, only when really falling, or none). A
   world nobody changed plays as beta. **Lock Rules** locks a world's rules so nothing in the game changes them; on a

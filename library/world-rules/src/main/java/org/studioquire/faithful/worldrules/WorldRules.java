@@ -25,6 +25,7 @@ public final class WorldRules implements FaithfulMod {
 	private static final int APPLE_ODDS = 200;
 
 	public static BoolRule mobsBreakBlocks;
+	public static BoolRule blastsDestroyItems;
 	public static BoolRule keepInventory;
 	public static BoolRule sleeping;
 	public static ChoiceRule dayLength;
@@ -47,6 +48,7 @@ public final class WorldRules implements FaithfulMod {
 	@Override
 	public void init(Mod mod) {
 		mobsBreakBlocks = mod.rules().bool("mobs_break_blocks", true);
+		blastsDestroyItems = mod.rules().bool("blasts_destroy_items", true);
 		keepInventory = mod.rules().bool("keep_inventory", false);
 		sleeping = mod.rules().bool("sleeping", true);
 		dayLength = mod.rules().choice("day_length", "normal", "double", "triple");

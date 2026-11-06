@@ -14,7 +14,7 @@ library's code is loaded, and nothing new goes over the network. The switches ar
 
 The mods:
 - World Rules: rules for each world, on its page in Mods... and on Create World's World Rules... page: Mobs Break Blocks,
-  Keep Inventory, Sleeping, Day Length, Weather, Natural Monsters, Monster Light, Apple Drops, Falling Hit Bonus. A world
+  Blasts Destroy Items, Keep Inventory, Sleeping, Day Length, Weather, Natural Monsters, Monster Light, Apple Drops, Falling Hit Bonus. A world
   nobody changed plays as beta. Lock Rules locks a world's rules so nothing in the game changes them; taking the line
   rules-locked=true out of the world's faithful-world.properties, with the game closed, unlocks them.
 - Better Dungeons: beta's dungeons can grow, with corridors to more rooms, buried and sealed, in beta's own blocks,

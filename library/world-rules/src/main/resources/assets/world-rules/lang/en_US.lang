@@ -1,5 +1,7 @@
 rule.world-rules.mobs_break_blocks.name=Mobs Break Blocks
 rule.world-rules.mobs_break_blocks.hint=Creepers and ghast fireballs break blocks, and fireballs start fires. Off: they still hurt, but leave the world alone.
+rule.world-rules.blasts_destroy_items.name=Blasts Destroy Items
+rule.world-rules.blasts_destroy_items.hint=Explosions of any kind destroy items lying on the ground. Off: they only throw them.
 rule.world-rules.keep_inventory.name=Keep Inventory
 rule.world-rules.keep_inventory.hint=You keep everything you carry when you die.
 rule.world-rules.sleeping.name=Sleeping

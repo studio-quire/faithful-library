@@ -199,7 +199,7 @@ public final class RulesCheck implements WorldCheck {
 		}
 		switch (stage) {
 			case 0: {
-				results.check("a new world: every rule at beta's default", WorldRules.mobsBreakBlocks.get() && !WorldRules.keepInventory.get() && WorldRules.sleeping.get()
+				results.check("a new world: every rule at beta's default", WorldRules.mobsBreakBlocks.get() && WorldRules.blastsDestroyItems.get() && !WorldRules.keepInventory.get() && WorldRules.sleeping.get()
 						&& WorldRules.dayLength.get().equals("normal") && WorldRules.weather.get().equals("normal") && WorldRules.naturalMonsters.get());
 				results.check("a world nobody touched has no rules file", !Files.exists(worldFile()));
 				Screen options = open(mc, new OptionsScreen(null, mc.options));
@@ -216,8 +216,8 @@ public final class RulesCheck implements WorldCheck {
 				press(page, keep);
 				results.check("pressing it writes the world's file and takes effect at once: " + keep.text, keep.text.equals("Keep Inventory: ON") && WorldRules.keepInventory.get() && Files.exists(worldFile()));
 				steps(page, "Day Length: ", WorldRules.dayLength, "Normal", "Double", "Triple");
-				steps(page, "Weather: ", WorldRules.weather, "Normal", "Clear", "Rain or Snow");
 				press(page, find(page, ">"));
+				steps(page, "Weather: ", WorldRules.weather, "Normal", "Clear", "Rain or Snow");
 				ButtonWidget monsters = find(page, "Natural Monsters");
 				results.check("monsters read ON: " + (monsters == null ? null : monsters.text), monsters != null && monsters.text.equals("Natural Monsters: ON"));
 				mc.setScreen(null);
@@ -273,6 +273,16 @@ public final class RulesCheck implements WorldCheck {
 				Rules.change(WorldRules.mobsBreakBlocks, "true");
 				mc.world.createExplosion(c, x + 0.5, y + 1, z + 0.5, 3.0F);
 				results.check("mobs break blocks on: a creeper breaks it", mc.world.getBlockId(x, y - 1, z) != Block.STONE.id);
+				Rules.change(WorldRules.blastsDestroyItems, "false");
+				// High in the air: these break nothing, and the player's far enough off not to feel them.
+				ItemEntity spared = new ItemEntity(mc.world, x + 1.5, y + 16, z + 0.5, new ItemStack(Item.DIAMOND));
+				mc.world.spawnEntity(spared);
+				mc.world.createExplosion(null, x + 0.5, y + 16, z + 0.5, 3.0F);
+				results.check("blasts destroy items off: the item is still there, and thrown", !spared.dead && spared.velocityX > 0);
+				Rules.change(WorldRules.blastsDestroyItems, "true");
+				spared.setPosition(x + 1.5, y + 16, z + 0.5);
+				mc.world.createExplosion(null, x + 0.5, y + 16, z + 0.5, 3.0F);
+				results.check("blasts destroy items on: it's gone", spared.dead);
 				mc.world.setTime(6000);
 				stage = 5;
 				return false;
@@ -284,7 +294,7 @@ public final class RulesCheck implements WorldCheck {
 					ButtonWidget lock = find(page, RuleSettings.LOCK), enabled = find(page, "Enabled");
 					results.check("World Rules' page: Lock Rules beside Enabled in the top row, pressable: " + (lock == null ? null : lock.x + "," + lock.y),
 							lock != null && enabled != null && lock.active && lock.y == enabled.y && lock.x == page.width / 2 + 5 && enabled.x == page.width / 2 - 155
-									&& find(page, "Keep Inventory").y == enabled.y + 24);
+									&& find(page, "Mobs Break Blocks").y == enabled.y + 24);
 				}
 				if (shot("rules-unlocked", find(page, RuleSettings.LOCK))) stage = 6;
 				return false;
