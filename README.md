@@ -86,7 +86,7 @@ says more.
   player who has it too sees the pale hearts. With it on a server without it, food is beta's.
 - **Item Repair** runs where the world runs too, so a server can use it with any client, vanilla beta 1.7.3 too. With it on a
   server without it, nothing is mended.
-- **Water Bottles**, **Alchemy**, **Blue Flowers** and **Buried Towers** need every player to have them, as anything that adds blocks or items does. A server running one
+- **Water Bottles**, **Alchemy**, **Blue Flowers** and **Buried Towers** need every player to have them: the first three add blocks or items, and Buried Towers builds on the library's world generation, which needs it too. A server running one
   refuses anyone without it, vanilla clients included, with a message saying so. A player on a library pack with any mod
   on is offered **Match This Server's Mods**, which turns on what that server needs for their next launch. A client with
   them can join a server without them, where they can't be made and no towers are built.
