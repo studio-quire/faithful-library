@@ -87,12 +87,32 @@ public final class Core {
 
 		@Override
 		public BoolRule bool(String key, boolean defaultValue) {
-			return Rules.declare(id + ":" + key, defaultValue);
+			return Rules.declare(id + ":" + key, false, defaultValue);
 		}
 
 		@Override
 		public ChoiceRule choice(String key, String... values) {
-			return Rules.declare(id + ":" + key, values);
+			return Rules.declare(id + ":" + key, false, values);
+		}
+
+		@Override
+		public RuleSet atCreation() {
+			return new RuleSet() {
+				@Override
+				public BoolRule bool(String key, boolean defaultValue) {
+					return Rules.declare(id + ":" + key, true, defaultValue);
+				}
+
+				@Override
+				public ChoiceRule choice(String key, String... values) {
+					return Rules.declare(id + ":" + key, true, values);
+				}
+
+				@Override
+				public RuleSet atCreation() {
+					return this;
+				}
+			};
 		}
 	}
 

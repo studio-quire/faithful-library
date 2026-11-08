@@ -20,19 +20,20 @@ import org.studioquire.oldfaithful.options.settings.SettingsRegistry;
 
 /**
  * World rules on the settings screen, each on its mod's page: this world's while one is open, otherwise what new worlds start with.
- * Every page with rules has Lock Rules while a world is open, which locks all of them, every mod's: the lock is the world's.
+ * Every page with rules has Lock Rules while a world is open, which locks all of them, every mod's: the lock is the world's, so while it holds
+ * no mod with rules can be switched off either.
  */
 public final class RuleSettings implements SettingsProvider {
 	private static final List<Setting> ALL = new ArrayList<>();
 	public static final String LOCK = "Lock Rules", LOCKED = "Rules Locked";
-	public static final String LOCK_HINT = "Locks every rule of this world, all mods', for good in game. Editing the world's file with the game closed undoes it.";
-	public static final String UNLOCK_HINT = "To unlock, remove " + Rules.LOCK_KEY + "=true from the world's faithful-world.properties with the game closed.";
+	public static final String LOCK_HINT = "Locks every rule of this world, all mods', so nothing in the game can change them.";
 	public static final String WORLD_LOCKED = "This world's rules are locked.", SERVER_LOCKED = "The server you're playing on has locked its rules.";
+	public static final String CHOSEN = "Chosen when this world was created.";
 	/** The confirm screen's: beta's two lines, the second wrapped, and its two buttons. */
 	public static final String CONFIRM = "Lock this world's rules?";
-	public static final String CONFIRM_WARNING = "No one can change them in game after this. Only editing the world's file with the game closed unlocks them.";
+	public static final String CONFIRM_WARNING = "No one can change them in game after this.";
 	public static final String CONFIRM_YES = "Lock", CONFIRM_NO = "Cancel";
-	private static final PageButton LOCK_BUTTON = new PageButton(RuleSettings::lockLabel, LOCK_HINT, RuleSettings::lockLocked, LockRulesScreen::new);
+	private static final PageButton LOCK_BUTTON = new PageButton(RuleSettings::lockLabel, LOCK_HINT, RuleSettings::lockReason, LockRulesScreen::new);
 
 	/** Every mod's rules on one page, for Create World; null if there are none. */
 	public static Screen screen(Screen parent) {
@@ -75,8 +76,11 @@ public final class RuleSettings implements SettingsProvider {
 			}
 			String mod = rule.id().substring(0, rule.id().indexOf(':'));
 			settings.mod(mod, modName(mod), RuleSettings::note);
-			settings.addToMod(mod, setting.lockedWhen(RuleSettings::locked));
-			if (pages.add(mod)) settings.addButtonToMod(mod, LOCK_BUTTON);
+			settings.addToMod(mod, setting.lockedWhen(rule.atCreation() ? RuleSettings::chosen : RuleSettings::locked));
+			if (pages.add(mod)) {
+				settings.addButtonToMod(mod, LOCK_BUTTON);
+				settings.holdMod(mod, RuleSettings::lockReason);
+			}
 			ALL.add(setting);
 		}
 	}
@@ -92,6 +96,12 @@ public final class RuleSettings implements SettingsProvider {
 		return Rules.worldOpen() && Rules.locked() ? WORLD_LOCKED : null;
 	}
 
+	/** A rule a world chooses when it's created: set on Create World's page, or as what new worlds start with, and only shown inside a world. */
+	private static String chosen() {
+		String locked = locked();
+		return locked != null ? locked : Rules.worldOpen() ? CHOSEN : null;
+	}
+
 	/** Shown in a world of one's own, and on a server only once it's locked, since only its owner can lock it. */
 	private static String lockLabel() {
 		if (Rules.onServer()) return Rules.locked() ? LOCKED : null;
@@ -99,8 +109,9 @@ public final class RuleSettings implements SettingsProvider {
 		return Rules.locked() ? LOCKED : LOCK;
 	}
 
-	private static String lockLocked() {
+	/** Why the lock's button, and the on and off of a mod with rules, can't be pressed. With no world open, nothing's locked. */
+	private static String lockReason() {
 		if (!Rules.locked()) return null;
-		return Rules.onServer() ? SERVER_LOCKED : UNLOCK_HINT;
+		return Rules.onServer() ? SERVER_LOCKED : WORLD_LOCKED;
 	}
 }

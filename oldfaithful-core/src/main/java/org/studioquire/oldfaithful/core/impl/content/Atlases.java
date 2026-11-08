@@ -13,7 +13,6 @@ public final class Atlases {
 	public static final class Tile {
 		public final String mod, kind, name; // kind "vanilla": name holds the terrain tile
 		public final int index;
-
 		Tile(String mod, String kind, String name, int index) {
 			this.mod = mod;
 			this.kind = kind;

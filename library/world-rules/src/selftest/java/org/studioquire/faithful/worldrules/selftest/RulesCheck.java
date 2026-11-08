@@ -30,6 +30,7 @@ import org.studioquire.oldfaithful.core.impl.Rules;
 import org.studioquire.oldfaithful.core.impl.client.RuleSettings;
 import org.studioquire.oldfaithful.options.settings.SettingsModsScreen;
 import org.studioquire.oldfaithful.options.settings.SettingsScreen;
+import org.studioquire.oldfaithful.selftest.LibraryScreens;
 import org.studioquire.oldfaithful.selftest.ScreenCapture;
 import org.studioquire.oldfaithful.selftest.SelfTest;
 import org.studioquire.oldfaithful.selftest.WorldCheck;
@@ -39,6 +40,7 @@ import org.studioquire.oldfaithful.selftest.mixin.ScreenAccessor;
  * World Rules in a running single player world and, joined to the real server, as a client sees them. Started by the harness's
  * start-up test. Then the lock: in single player through the page and its confirm screen, and later launches ({@code worldrules.test.phase})
  * find it still there after a reopen, then gone once the harness took the line out of the world's file; on a locked server, as a client sees it.
+ * A mod with rules can't be switched off inside the lock: its Enabled, and that of what it depends on (jars in mods-library with nothing in them but a name, which the harness adds).
  */
 public final class RulesCheck implements WorldCheck {
 	private static final String PHASE = System.getProperty("worldrules.test.phase");
@@ -97,11 +99,50 @@ public final class RulesCheck implements WorldCheck {
 		for (String label : new String[]{RuleSettings.LOCK, RuleSettings.LOCKED}) {
 			if (mc.textRenderer.getWidth(label) > 144) problems.add(label);
 		}
-		for (String hint : new String[]{RuleSettings.LOCK_HINT, RuleSettings.UNLOCK_HINT, RuleSettings.WORLD_LOCKED, RuleSettings.SERVER_LOCKED}) {
+		for (String hint : new String[]{RuleSettings.LOCK_HINT, RuleSettings.WORLD_LOCKED, RuleSettings.SERVER_LOCKED}) {
 			if (wrap(mc, hint).size() > 2) problems.add(hint);
 		}
 		if (mc.textRenderer.getWidth(RuleSettings.CONFIRM) > 300 || wrap(mc, RuleSettings.CONFIRM_WARNING).size() > 3) problems.add("the confirm screen's lines");
 		results.check("the lock's words fit their places" + (problems.isEmpty() ? "" : ": " + problems), problems.isEmpty());
+		String all = String.join(" ", RuleSettings.LOCK, RuleSettings.LOCKED, RuleSettings.LOCK_HINT, RuleSettings.WORLD_LOCKED, RuleSettings.SERVER_LOCKED, RuleSettings.CONFIRM, RuleSettings.CONFIRM_WARNING);
+		results.check("and they say nothing of how to unlock: " + all, saysNothingOfUnlocking(all));
+	}
+
+	private static boolean saysNothingOfUnlocking(String text) {
+		String lower = text.toLowerCase(java.util.Locale.ROOT);
+		for (String word : new String[]{"file", "propert", "unlock", "edit", "remove", "closed", Rules.LOCK_KEY}) {
+			if (lower.contains(word)) return false;
+		}
+		return true;
+	}
+
+	/** What the page really draws with the mouse on a button, which is that button's hint and the rest of the page. */
+	private static String drawnOver(Screen page, ButtonWidget button) {
+		LibraryScreens.clear();
+		page.render(button.x + 4, button.y + 4, 0);
+		return LibraryScreens.text();
+	}
+
+	private static String libraryList() {
+		try {
+			Path list = FabricLoader.getInstance().getGameDir().resolve("mods-library").resolve("selection.txt");
+			return Files.exists(list) ? new String(Files.readAllBytes(list), StandardCharsets.UTF_8) : "";
+		} catch (IOException e) {
+			return "unreadable: " + e;
+		}
+	}
+
+	/** A mod's Enabled in a lock: greyed, saying why when pointed at, and a press changes neither it nor the library's list. */
+	private void lockedSwitch(Screen page, String where, String why) {
+		ButtonWidget enabled = find(page, "Enabled");
+		if (enabled == null) {
+			results.check(where + ": the page has Enabled", false);
+			return;
+		}
+		String before = enabled.text, list = libraryList(), drawn = drawnOver(page, enabled);
+		press(page, enabled);
+		results.check(where + ": Enabled can't be pressed, and shows why: " + before + ", " + drawn, !enabled.active && drawn.contains(why) && saysNothingOfUnlocking(drawn));
+		results.check(where + ": a press leaves it and the library's list as they were", enabled.text.equals(before) && libraryList().equals(list));
 	}
 
 	/** A page of locked rules: the lock's button says so and can't be pressed, and every rule shows its value and can't be pressed either. */
@@ -111,6 +152,11 @@ public final class RulesCheck implements WorldCheck {
 				lock != null && !lock.active && find(page, RuleSettings.LOCK) == null);
 		results.check(where + ": the rules show their values and can't be pressed: " + (keep == null || day == null ? null : keep.text + ", " + day.text),
 				keep != null && day != null && !keep.active && !day.active && keep.text.equals("Keep Inventory: OFF") && day.text.equals("Day Length: Normal"));
+		if (lock != null) {
+			String drawn = drawnOver(page, lock);
+			results.check(where + ": the button's hint says the rules are locked, not how to unlock: " + drawn, drawn.contains(RuleSettings.WORLD_LOCKED) && saysNothingOfUnlocking(drawn));
+		}
+		lockedSwitch(page, where, RuleSettings.WORLD_LOCKED);
 	}
 
 	private static Path worldFile() {
@@ -131,6 +177,13 @@ public final class RulesCheck implements WorldCheck {
 	private Screen open(Minecraft mc, Screen s) {
 		s.init(mc, 427, 240);
 		return s;
+	}
+
+	/** A mod's page from the Mods menu, by the start of its name. */
+	private Screen pageOf(Minecraft mc, String name) {
+		Screen mods = open(mc, SettingsScreen.open(null));
+		press(mods, find(mods, name));
+		return mc.currentScreen;
 	}
 
 	/** A choice's button goes through its words, each taking effect, back to where it started. */
@@ -177,18 +230,13 @@ public final class RulesCheck implements WorldCheck {
 		Screen page = modPage(mc);
 		ButtonWidget rules = find(page, "Enabled");
 		results.check("World Rules reads as on, as this launch's list has it: " + (rules == null ? null : rules.text), rules != null && rules.text.equals("Enabled: ON"));
-		Path list = FabricLoader.getInstance().getGameDir().resolve("mods-library").resolve("selection.txt");
-		try {
-			press(page, rules);
-			String text = new String(Files.readAllBytes(list));
-			results.check("off: the list loses it, and the core too with nothing else on; the button says wait for a restart: " + rules.text,
-					!text.contains("world-rules.jar") && !text.contains("faithful-core.jar") && rules.text.equals("Enabled: OFF*"));
-			press(page, rules);
-			text = new String(Files.readAllBytes(list));
-			results.check("on: both are back", text.contains("world-rules.jar") && text.contains("faithful-core.jar") && rules.text.equals("Enabled: ON"));
-		} catch (java.io.IOException e) {
-			results.fail("the selection list", e);
-		}
+		press(page, rules);
+		String text = libraryList();
+		results.check("off: the list loses it, and the core too with nothing else on; the button says wait for a restart: " + rules.text,
+				!text.contains("world-rules.jar") && !text.contains("faithful-core.jar") && rules.text.equals("Enabled: OFF*"));
+		press(page, rules);
+		text = libraryList();
+		results.check("on: both are back", text.contains("world-rules.jar") && text.contains("faithful-core.jar") && rules.text.equals("Enabled: ON"));
 	}
 
 	@Override
@@ -354,16 +402,40 @@ public final class RulesCheck implements WorldCheck {
 				}
 				results.check("a rule a mod brought since is at its default, and locked too", late != null && "false".equals(Rules.shown(late)) && !Rules.change(late, "true")
 						&& "false".equals(Rules.shown(late)) && !worldText().contains("late_rule"));
-				Screen mods = open(mc, SettingsScreen.open(null));
-				press(mods, find(mods, "World Rules self-test"));
-				ButtonWidget other = find(mc.currentScreen, RuleSettings.LOCKED), lateButton = find(mc.currentScreen, "rule.world-rules-selftest.late_rule");
+				Screen lateMod = pageOf(mc, "World Rules self-test");
+				ButtonWidget other = find(lateMod, RuleSettings.LOCKED), lateButton = find(lateMod, "rule.world-rules-selftest.late_rule");
 				results.check("and that mod's page shows the lock too, its rule not pressable", other != null && !other.active && lateButton != null && !lateButton.active);
+				lockedSwitch(lateMod, "any mod with rules, not only World Rules", RuleSettings.WORLD_LOCKED);
+				lockedSwitch(pageOf(mc, "Side Door Base"), "a mod with no rules that one with rules depends on", RuleSettings.WORLD_LOCKED);
+				Screen free = pageOf(mc, "Free Mod");
+				ButtonWidget freeSwitch = find(free, "Enabled");
+				results.check("a mod with no rules and nothing depending on it can still be pressed", freeSwitch != null && freeSwitch.active);
+				if (freeSwitch != null) {
+					press(free, freeSwitch);
+					results.check("and it goes on the list: " + freeSwitch.text, libraryList().contains("free-mod.jar"));
+					press(free, freeSwitch);
+					results.check("and off again: " + freeSwitch.text, !libraryList().contains("free-mod.jar"));
+				}
+				mc.setScreen(null);
+				// As the pause menu's Save and quit to title does.
+				mc.setWorld(null);
+				mc.setScreen(null);
+				stage = 301;
+				wait = 5;
+				return false;
+			}
+			case 301: {
+				results.check("on the title screen: nothing's locked here, and the world's file still has the line", !Rules.worldOpen() && !Rules.locked() && worldText().contains(Rules.LOCK_KEY + "=true"));
+				library(mc);
+				ButtonWidget base = find(pageOf(mc, "Side Door Base"), "Enabled");
+				results.check("and what a mod with rules depends on can be pressed too", base != null && base.active);
 				mc.setScreen(null);
 				return true;
 			}
 			case 400: {
 				// The harness took the line out with the game closed.
 				results.check("unlocked by hand: the line gone, the rules unlocked", !Rules.locked() && !worldText().contains(Rules.LOCK_KEY));
+				library(mc);
 				Screen page = modPage(mc);
 				ButtonWidget lock = find(page, RuleSettings.LOCK), keep = find(page, "Keep Inventory");
 				results.check("the page has Lock Rules again, and the rules can be pressed", lock != null && lock.active && keep != null && keep.active);
@@ -389,6 +461,7 @@ public final class RulesCheck implements WorldCheck {
 					ButtonWidget keep = find(page, "Keep Inventory"), day = find(page, "Day Length");
 					results.check("its page reads " + RuleSettings.LOCKED + ", not pressable, and the rules aren't either", find(page, RuleSettings.LOCKED) != null
 							&& !find(page, RuleSettings.LOCKED).active && keep != null && !keep.active && day != null && !day.active);
+					lockedSwitch(page, "on a locked server", RuleSettings.SERVER_LOCKED);
 				}
 				if (!shot("server-locked", find(page, RuleSettings.LOCKED))) return false;
 				mc.setScreen(null);

@@ -7,8 +7,11 @@ import java.util.function.Supplier;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import org.studioquire.oldfaithful.core.impl.Attachments;
+import org.studioquire.oldfaithful.core.impl.SavedChunks;
 
 /**
  * A mod's own data on a player, an entity or a chunk, declared once in {@code init} through {@link Mod#attachment}:
@@ -164,5 +167,12 @@ public final class Attachment<H, T> {
 	/** Null takes the value away. */
 	public void set(H holder, T value) {
 		Attachments.set(holder, this, value);
+	}
+
+	/** A chunk's value as last saved, read from the disk with nothing loaded, or null: no such chunk saved, or no value in it. A chunk in memory may have a newer one, so ask there first. */
+	public T saved(World world, int chunkX, int chunkZ) {
+		if (kind != Kind.CHUNK) throw new IllegalArgumentException(id + ": only a chunk's attachment lies on disk by itself");
+		NbtCompound value = SavedChunks.attachment(world, chunkX, chunkZ, id);
+		return value == null ? null : codec.read(value);
 	}
 }

@@ -113,8 +113,11 @@ public final class ClientNet implements CoreNet.Side {
 		// The section stays and says nothing: no server reads it, and a client-only mod is no business of a server's.
 		if (!matches) {
 			client.sendPacketAndDisconnect(new ChannelPacket(0, reply.encode(), false));
-			List<String> lines = sameProtocol ? Hello.differences(hello.mods, Core.mods())
-					: new ArrayList<>(Arrays.asList("This server's Faithful Core is a different version: please update."));
+			List<String> log = new ArrayList<>();
+			List<String> lines = sameProtocol ? Hello.differences(hello.mods, Core.mods(), MismatchScreen::modName, log)
+					: new ArrayList<>(Arrays.asList("This server has another version of the Faithful Library, and yours needs to match it."));
+			if (!sameProtocol) log.add("Faithful Core protocol " + hello.protocol + " on the server, " + Hello.PROTOCOL + " here");
+			for (String line : log) System.out.println("[faithful-core] Not joining, the mods don't match: " + line);
 			List<String> theirSet = new ArrayList<>();
 			for (ModInfo m : hello.mods) {
 				if (m.mustMatch()) theirSet.add(m.id);

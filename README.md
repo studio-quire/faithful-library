@@ -8,8 +8,8 @@ A library pack comes with all of them on, and each has a switch; with every one 
 Open source, from
 [Studio Quire](https://studioquire.org/).
 
-They're mods, not a modified game: your launcher downloads Minecraft itself from Mojang, with your own account. Nothing
-of Mojang's is in this repository or in our downloads. For Windows now.
+They're mods, not a modified game: your launcher downloads Minecraft itself from Mojang, with your own account. For
+Windows now.
 
 ## The mods
 
@@ -18,15 +18,38 @@ of Mojang's is in this repository or in our downloads. For Windows now.
   rain or snow), Natural Monsters, Monster Light (monsters appear in dim light as in beta, or not in any torch or lava
   light), Apple Drops (oak leaves, 1 time in 200) and Falling Hit Bonus (beta's, only when really falling, or none). A
   world nobody changed plays as beta. **Lock Rules** locks a world's rules so nothing in the game changes them; on a
-  server, `/rule lock`. Taking `rules-locked=true` out of the world's `faithful-world.properties`, with the game closed,
-  unlocks them.
-- **Better Dungeons**: beta's dungeons can grow. Corridors lead off the room to more rooms, buried and sealed, in beta's
-  own blocks, with its monsters and chest list. Nothing outside a dungeon changes, and it only touches new chunks.
-- **Water Bottles**: glass bottles you fill at any water and drink from for nothing. Three glass in a V at the bench
-  makes three. An ingredient for mods to come.
+  server, `/rule lock`. While they're locked, the Mods menu doesn't switch off a mod that has rules. Taking
+  `rules-locked=true` out of the world's `faithful-world.properties`, with the game closed, unlocks them.
+- **Buried Towers**: ruined towers stand on the land about every 24 chunks, and go a long way down, to about bedrock:
+  floors somebody built and time got to, a different way down from each, in beta's own blocks. They take the place of
+  beta's small dungeons in new chunks, and don't cut into land already made. A world chooses its towers when it's
+  created, with **Towers** on Create World's World Rules... page, and keeps them: **Simple** (the default), crude stumps
+  of cobble and moss like beta's dungeons, about 12 blocks across, or **Complex**, big towers of dressed stone, about
+  23 across. (Better Dungeons, which this replaces, is gone: rooms it built stay in your worlds as ordinary blocks.)
+- **Water Bottles**: glass bottles you fill at any water and drink from for nothing. Three glass in a V at
+  the bench makes three. An ingredient for mods to come.
+- **Hearty Food**: food heals half as much again, at half a heart a second instead of at once, and pale hearts show where
+  you'll end up. Eating is one click as ever. More food adds to what's coming, a hit doesn't cancel it,
+  and it helps even mid-fight. A golden apple still heals everything at once. Food past a full bar is wasted, as in beta.
+- **Alchemy**: gild a rose, then brew it. Four gold ingots around a rose at the bench make a Golden Rose. A water bottle
+  with one, two or three of them makes a Weak Health Potion, a Health Potion or a Strong Health Potion, in the
+  inventory's grid too. Drinking heals 4, 6 or 8 hearts at once and leaves the bottle; at full health it isn't drunk. It
+  needs Water Bottles, which comes on with it.
+- **Blue Flowers**: a blue flower in patches across Taiga and Tundra, as dandelions grow in warmer land. New chunks only.
+  It's placed and picked like the rose and dandelion, and makes two light blue dye. Bonemeal on grass in those biomes can
+  grow one too.
+- **Item Repair**: two worn tools, weapons or pieces of armour of the same kind in the crafting grid make one, with what
+  was left of both, up to as good as new, as in later versions. Shears, fishing rods and flint and steel too. A
+  world rule, Repair Bonus, adds a twentieth of a new one's durability on top, as later versions did; it's off to start
+  with, so mending only puts together what you had, and there's nothing to gain by saving worn things for it.
 - **Plain F3**: the F3 screen keeps its frame rate and memory and loses position, facing and entity counts, and mobs lose
   the numbers beta tags them with through walls, so you find your way without coordinates.
 - **No Toasts**: no achievement or tutorial pop-ups. Achievements are still earned.
+
+**Stagehand** is in the release as a jar of its own and in no pack: it runs scripts dropped into a folder in the game's
+directory (teleports, items, time, weather, mobs, blocks), and writes back what happened, for setting up a play-test from
+outside the game. Anything that can write to that folder can command the game, so install it only if you want that.
+[docs/stagehand.md](docs/stagehand.md) says how.
 
 **Faithful Core** is what they build on, and arrives only with them: none of the editions carries it, so a game with no
 library mod on never says anything new on the network. **Faithful Settings** is the settings screen they share, which
@@ -53,22 +76,25 @@ them, as anyone's own setup can (below).
 
 `OldFaithful-Library-server-<version>.zip` and `StillFaithful-Library-server-<version>.zip` are that edition's server
 package with the library's server-side mods on in `mods/`, as in the packs. So as they come they refuse a player without
-Water Bottles. Move out of `mods/` the jars you don't want, before the first start; `faithful-core` and
+Water Bottles, Alchemy, Blue Flowers and Buried Towers. Move out of `mods/` the jars you don't want, before the first start; `faithful-core` and
 `oldfaithful-settings` stay while any library mod does. With them all out it's the plain edition's server. The README inside
 says more.
 
-- **World Rules** and **Better Dungeons** run where the world runs, so a server can use them with any client, vanilla
-  beta 1.7.3 too. A server with them is the same to a player who hasn't got them. `/rule <name> <value>` for ops and the
-  console.
-- **Water Bottles** needs every player to have it, as anything that adds blocks or items does. A server running it
+- **World Rules** runs where the world runs, so a server can use it with any client, vanilla beta 1.7.3 too. A server with
+  it is the same to a player who hasn't got it. `/rule <name> <value>` for ops and the console.
+- **Hearty Food** runs where the world runs too. On a server with it food heals over time for every player, but only a
+  player who has it too sees the pale hearts. With it on a server without it, food is beta's.
+- **Item Repair** runs where the world runs too, so a server can use it with any client, vanilla beta 1.7.3 too. With it on a
+  server without it, nothing is mended.
+- **Water Bottles**, **Alchemy**, **Blue Flowers** and **Buried Towers** need every player to have them, as anything that adds blocks or items does. A server running one
   refuses anyone without it, vanilla clients included, with a message saying so. A player on a library pack with any mod
-  on is offered **Use This Server's Set**, which turns on what that server needs for their next launch. A client with
-  Water Bottles can join a server without it, where the bottles can't be made.
+  on is offered **Match This Server's Mods**, which turns on what that server needs for their next launch. A client with
+  them can join a server without them, where they can't be made and no towers are built.
 - **Plain F3** and **No Toasts** are the player's alone, on any server.
 
-With any library mod on, your login says you have Faithful Core. A server with the core can see that, and which of its
-own mod channels you share. It isn't told which other mods you have, Plain F3 and No Toasts included. A vanilla server
-ignores it.
+With any library mod on, your game tells a server you join that you have the Faithful Library. A server with the library
+sees that, and which of that server's own library mods you have too. It isn't told which other mods you have, Plain F3
+and No Toasts included. A vanilla server ignores it.
 
 Servers running other software (Project Poseidon and other Bukkit-family servers) can't load these mods. A client's mods
 behave there as on a vanilla server.
@@ -80,8 +106,13 @@ original game too. What you lose, plainly:
 
 - **World Rules**: nothing. Its choices stay in the world's `faithful-world.properties` and come back with the mod. The
   hour can jump if the day's length was changed.
-- **Better Dungeons**: rooms it built stay, as ordinary blocks. A dungeon it hadn't reached stays beta's single room.
-- **Water Bottles**: its items don't survive. Bottles in that world become bowls for good.
+- **Buried Towers**: towers it's built stay, as ordinary blocks, and new chunks go back to beta's own dungeons. A tower half
+  made stays half made. Rooms the old Better Dungeons built stay too.
+- **Water Bottles**: its items don't survive. Bottles in that world become bowls for good. Alchemy goes off with it, as it needs it.
+- **Alchemy**: its items don't survive. Golden roses in that world become roses and potions become bowls, for good.
+- **Blue Flowers**: its flowers don't survive. Growing or carried, in that world they become roses, for good.
+- **Hearty Food**: food goes back to beta's. Healing still to come waits in the player's save and goes on if the mod returns.
+- **Item Repair**: nothing. What it mended stays mended, and Repair Bonus, if you turned it on, stays in the world's file.
 - **Plain F3** and **No Toasts** leave nothing in a world.
 
 While any library mod is on, Faithful Core is loaded and warns you before a world that's seen a removed content mod

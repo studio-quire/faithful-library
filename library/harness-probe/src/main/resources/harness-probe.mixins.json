@@ -3,5 +3,6 @@
   "package": "org.studioquire.faithful.harness.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": ["BlockEntityAccessor", "EntityAccessor", "EntityRegistryAccessor", "FireBlockAccessor", "ToolItemAccessor", "WorldFrozenMixin"],
+  "server": ["MinecraftServerTickRateMixin", "ServerLoginTickRateMixin", "ConnectionWriterTickRateMixin"],
   "injectors": {"defaultRequire": 1}
 }

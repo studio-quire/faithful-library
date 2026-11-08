@@ -65,7 +65,7 @@ final class Monkey {
 		}
 	}
 
-	private enum Step { SET_UP, WAIT_READY, ACT, MINE, SETTLE, ASK, COMPARE, RECHECK, SCREEN_ASK, SCREEN_CLICK, SCREEN_SETTLE, SCREEN_COMPARE, SCREEN_CLOSE }
+	private enum Step { SET_UP, WAIT_READY, ACT, MINE, SETTLE, ASK, COMPARE, RECHECK, SCREEN_ASK, SCREEN_CLICK, SCREEN_SETTLE, SCREEN_COMPARE, SCREEN_CLOSE, CLOSE_SYNC }
 
 	private final Channel channel;
 	private final ArrayDeque<Bench> plan = new ArrayDeque<>();
@@ -74,7 +74,7 @@ final class Monkey {
 	private final Random random = new Random(5);
 	private Step step = Step.SET_UP;
 	private Bench bench;
-	private int x, y, z, cell, wait, ticks, benches, click;
+	private int x, y, z, cell, wait, ticks, benches, click, closeAnswers;
 	private boolean ready;
 	private MonkeyState answer, before;
 	private List<String> firstDiff;
@@ -252,8 +252,27 @@ final class Monkey {
 			}
 			case SCREEN_CLOSE:
 				mc.player.closeHandledScreen();
-				// A screen stops the uses, and the bench's other cells are still to come.
-				go(cell < bench.blocks.length ? bench.mine ? Step.MINE : Step.ACT : Step.SET_UP, 3);
+				if (cell >= bench.blocks.length) {
+					go(Step.SET_UP, 3);
+					return false;
+				}
+				closeAnswers = 0;
+				ask();
+				step = Step.CLOSE_SYNC;
+				return false;
+			case CLOSE_SYNC:
+				if (answer == null) return false;
+				/*
+				 * A screen stops the uses, and the bench's other cells are still to come. But back on the player's own screen, a server sends that screen's slots again
+				 * on its next tick, from what it last sent before the other one opened: already known here, so harmless, unless a use comes first. Then the use's guess
+				 * is overwritten, and as the server's hand ends as the use's packet said, nothing corrects it (planks placed four ticks after a dispenser closed: one
+				 * more on the client for good). Beta's own race; a second answer comes from a later server tick than the close, so after that resend.
+				 */
+				if (++closeAnswers < 2) {
+					ask();
+					return false;
+				}
+				go(bench.mine ? Step.MINE : Step.ACT, 3);
 				return false;
 			default:
 				return true;

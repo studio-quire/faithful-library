@@ -1,6 +1,0 @@
-plugins { id 'oldfaithful.mod' }
-
-dependencies {
-    compileOnly project(':oldfaithful-core')
-    compileOnly project(':library:better-dungeons')
-}

@@ -9,6 +9,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.feature.DungeonFeature;
 import org.studioquire.oldfaithful.core.impl.DungeonFeatureInvoker;
 import org.studioquire.oldfaithful.core.impl.content.Features;
@@ -32,6 +33,9 @@ public final class Worldgen {
 	public interface Cells {
 		World world();
 
+		/** The chunk itself, for what goes with its cells, like an attachment. It isn't in the world yet: nothing here can reach it through the world, and writing cells goes through this, not it. */
+		Chunk chunk();
+
 		int chunkX();
 
 		int chunkZ();
@@ -50,7 +54,10 @@ public final class Worldgen {
 	}
 
 	public interface Decoration {
-		/** Stay in {@code x..x+15}, {@code z..z+15}, plus up to 8 either side: past that, a neighbour may not exist yet, and asking makes it. */
+		/**
+		 * Stay in {@code x..x+15}, {@code z..z+15}, plus up to 8 either side: past that, a neighbour may not exist yet, and asking makes it. A new world's spawn search decorates too, so on a server this
+		 * can run before the world is finished: {@link Server#world} doesn't have it yet, and an entity added then dies at the first tick, as nothing could be tracking it.
+		 */
 		void decorate(World world, Random random, int x, int z);
 	}
 
@@ -69,7 +76,21 @@ public final class Worldgen {
 		int halfZ();
 	}
 
+	/** Asked before vanilla's generator tries for a dungeon somewhere. */
+	public interface DungeonPlacing {
+		World world();
+
+		int x();
+
+		int y();
+
+		int z();
+
+		void cancel();
+	}
+
 	private static final Listeners<Consumer<Dungeon>> DUNGEONS = new Listeners<>("Worldgen.onDungeon");
+	private static final Listeners<Consumer<DungeonPlacing>> DUNGEON_PLACING = new Listeners<>("Worldgen.onDungeonPlacing");
 
 	private Worldgen() {
 	}
@@ -80,6 +101,48 @@ public final class Worldgen {
 	 */
 	public static void onDungeon(Consumer<Dungeon> listener) {
 		DUNGEONS.add(listener);
+	}
+
+	/**
+	 * Veto: vanilla's generator is about to try for a dungeon, which it does eight times a chunk, most finding no place. Cancelled, it still goes through the whole of it and makes all the same random
+	 * draws, as though the room had been made, but no cell changes and {@link #onDungeon} isn't heard: so the ores and plants after it in that chunk's stream stay where they'd have been.
+	 */
+	public static void onDungeonPlacing(Consumer<DungeonPlacing> listener) {
+		DUNGEON_PLACING.add(listener);
+	}
+
+	/** The core's. */
+	public static boolean dungeonVetoed(World world, int x, int y, int z) {
+		if (DUNGEON_PLACING.isEmpty()) return false;
+		boolean[] cancelled = new boolean[1];
+		DungeonPlacing placing = new DungeonPlacing() {
+			@Override
+			public World world() {
+				return world;
+			}
+
+			@Override
+			public int x() {
+				return x;
+			}
+
+			@Override
+			public int y() {
+				return y;
+			}
+
+			@Override
+			public int z() {
+				return z;
+			}
+
+			@Override
+			public void cancel() {
+				cancelled[0] = true;
+			}
+		};
+		DUNGEON_PLACING.each(l -> l.accept(placing));
+		return cancelled[0];
 	}
 
 	/** The core's. */

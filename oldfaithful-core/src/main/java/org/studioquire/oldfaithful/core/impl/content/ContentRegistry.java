@@ -435,6 +435,7 @@ public final class ContentRegistry {
 		public int vanillaTile(int tile) {
 			return Atlases.vanillaTile(tile);
 		}
+
 	}
 
 	public static boolean modBlock(int id) {
@@ -467,6 +468,14 @@ public final class ContentRegistry {
 	public static int itemId(String name) {
 		Integer id = ITEM_IDS.get(ALIASES.getOrDefault(name, name));
 		return id == null ? -1 : id;
+	}
+
+	public static List<String> blockNames() {
+		return new ArrayList<>(new TreeMap<>(BLOCK_IDS).keySet());
+	}
+
+	public static List<String> itemNames() {
+		return new ArrayList<>(new TreeMap<>(ITEM_IDS).keySet());
 	}
 
 	public static int itemStandInId(int id) {

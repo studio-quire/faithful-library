@@ -13,4 +13,11 @@ public interface RuleSet {
 	 * {@code rule.<mod id>.<key>.<value>}.
 	 */
 	ChoiceRule choice(String key, String... values);
+
+	/**
+	 * The same, for rules a world chooses once, when it's created, and keeps: for what a world is made of rather than how it plays, such as how its generated buildings look, where changing it
+	 * partway would leave the world half one thing and half the other. Set on Create World's World Rules page, or on a server in the world's file before its first start; shown inside a world, but
+	 * not changed there, nor by {@code /rule}. A world made before the rule existed has the default.
+	 */
+	RuleSet atCreation();
 }

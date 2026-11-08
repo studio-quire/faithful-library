@@ -176,11 +176,25 @@ public final class TestHost {
 		}
 	}
 
+	/** Liquid at the plot's edge, or one step from an open edge, turns to stone first: a spawn beside a lake floods the plot once it's cleared, and one test's torch then couldn't light through the water. */
+	private static void sealCell(World world, int x, int y, int z, int outX, int outZ) {
+		if (world.getMaterial(x, y, z).isFluid() || world.getBlockId(x, y, z) == 0 && world.getMaterial(x + outX, y, z + outZ).isFluid()) world.setBlock(x, y, z, Block.STONE.id);
+	}
+
 	private static void clearPlot(World world, int x, int y, int z) {
 		int r = WorldTest.PLOT;
+		for (int d = -r - 1; d <= r + 1; d++) {
+			for (int dy = 127 - y; dy >= -1; dy--) {
+				sealCell(world, x + d, y + dy, z - r - 1, 0, -1);
+				sealCell(world, x + d, y + dy, z + r + 1, 0, 1);
+				sealCell(world, x - r - 1, y + dy, z + d, -1, 0);
+				sealCell(world, x + r + 1, y + dy, z + d, 1, 0);
+			}
+		}
 		for (int dx = -r; dx <= r; dx++) {
 			for (int dz = -r; dz <= r; dz++) {
-				for (int dy = CLEAR_HEIGHT; dy >= 0; dy--) world.setBlock(x + dx, y + dy, z + dz, 0);
+				// All the way up: sand left over it falls on the player whenever its queued block tick comes (a spawn under a sandy hill buried one).
+				for (int dy = 127 - y; dy >= 0; dy--) world.setBlock(x + dx, y + dy, z + dz, 0);
 				world.setBlock(x + dx, y - 1, z + dz, Block.STONE.id);
 			}
 		}

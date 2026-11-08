@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import org.studioquire.oldfaithful.core.impl.SavedChunks;
 
 /**
  * Chunks coming and going where the world runs. Never on a client on a server, where chunks are only a view. "Built" is the
@@ -35,6 +36,11 @@ public final class Chunks {
 	/** Whether a chunk, by its chunk coordinates, is in memory. Asks without loading it, as a world's own {@code getChunk} wouldn't. Works on any side, for what that side has. */
 	public static boolean isLoaded(World world, int chunkX, int chunkZ) {
 		return world.isPosLoaded(chunkX << 4, 0, chunkZ << 4);
+	}
+
+	/** Whether a chunk has been saved to disk, whether or not it's also in memory, looking at the disk and loading nothing. A chunk made since its last save reads as not saved. */
+	public static boolean isSaved(World world, int chunkX, int chunkZ) {
+		return SavedChunks.exists(world, chunkX, chunkZ);
 	}
 
 	/** The core's. */

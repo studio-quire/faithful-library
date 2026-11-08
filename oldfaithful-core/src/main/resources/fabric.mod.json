@@ -3,7 +3,7 @@
   "id": "faithful-core",
   "version": "${version}",
   "name": "Faithful Core",
-  "description": "What the Faithful Library's mods build on: mod networking that vanilla peers never see, world rules, shared hooks. Needed by the library's mods; does nothing by itself.",
+  "description": "What the Faithful Library's mods build on: mod networking that vanilla clients and servers never see, world rules, shared hooks. Needed by the library's mods; does nothing by itself.",
   "authors": ["Claude Opus 5.5 (Anthropic's AI), at Studio Quire"],
   "contributors": ["Shoalstone (idea, direction and play-testing)"],
   "contact": {

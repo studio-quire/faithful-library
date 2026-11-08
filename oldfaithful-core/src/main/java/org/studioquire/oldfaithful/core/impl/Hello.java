@@ -160,20 +160,45 @@ public final class Hello {
 		return n;
 	}
 
-	/** What differs between two mod lists, as lines for a person: only what must match. */
-	public static List<String> differences(List<ModInfo> server, List<ModInfo> client) {
+	/**
+	 * What differs between two mod lists, only what must match: as lines for a person, by the mods' names ({@code name} of an
+	 * id), and as lines for the log, by id and version.
+	 */
+	public static List<String> differences(List<ModInfo> server, List<ModInfo> client, java.util.function.Function<String, String> name, List<String> log) {
 		List<String> lines = new ArrayList<>();
 		for (ModInfo s : server) {
 			if (!s.mustMatch()) continue;
 			ModInfo c = find(client, s.id);
-			if (c == null) lines.add("Missing: " + s.id + " " + s.version);
-			else if (c.network != s.network) lines.add("Different: " + s.id + " " + c.version + " here, " + s.version + " on the server");
+			if (c == null) {
+				lines.add("The server needs: " + name.apply(s.id));
+				log.add("Missing: " + s.id + " " + s.version);
+			} else if (c.network != s.network) {
+				lines.add("Needs another version: " + name.apply(s.id) + " (yours " + c.version + ", the server's " + s.version + ")");
+				log.add("Different: " + s.id + " " + c.version + " here, " + s.version + " on the server");
+			}
 		}
 		for (ModInfo c : client) {
-			if (c.mustMatch() && find(server, c.id) == null) lines.add("Extra: " + c.id + " " + c.version);
+			if (c.mustMatch() && find(server, c.id) == null) {
+				lines.add("Turn off to join: " + name.apply(c.id));
+				log.add("Extra: " + c.id + " " + c.version);
+			}
 		}
-		if (lines.isEmpty()) lines.add("The mods look the same, but what they add differs");
+		if (lines.isEmpty()) {
+			lines.add("The mods look the same, but what they add differs");
+			log.add("Same mods, different content hashes");
+		}
 		return lines;
+	}
+
+	/** {@code blue-flowers} as Blue Flowers, for a mod nothing here has a name for. */
+	public static String titled(String id) {
+		StringBuilder out = new StringBuilder();
+		for (String word : id.split("[-_]")) {
+			if (word.isEmpty()) continue;
+			if (out.length() > 0) out.append(' ');
+			out.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+		}
+		return out.length() > 0 ? out.toString() : id;
 	}
 
 	private static ModInfo find(List<ModInfo> mods, String id) {

@@ -129,6 +129,11 @@ public final class Features {
 		}
 
 		@Override
+		public Chunk chunk() {
+			return chunk;
+		}
+
+		@Override
 		public int chunkX() {
 			return chunk.x;
 		}

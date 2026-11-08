@@ -12,10 +12,15 @@
 if (findProject(':oldfaithful-core') == null || !releaseEditions.containsKey('still')) return
 
 // A new mod of the library must be placed here on purpose; test-only mods say library_test=true.
-def libraryMods = ['better-dungeons', 'no-toasts', 'plain-f3', 'water-bottles', 'world-rules']
+def libraryMods = ['alchemy', 'blue-flowers', 'buried-towers', 'hearty-food', 'item-repair', 'no-toasts', 'plain-f3', 'water-bottles', 'world-rules']
+// A public jar in the release and nothing more: in no pack or server package, for what shouldn't be on by default. They say library_jar_only=true.
+def libraryJarOnly = subprojects.findAll {
+    def props = it.file('gradle.properties')
+    it.path.startsWith(':library:') && it.file('build.gradle').isFile() && props.isFile() && props.text.contains('library_jar_only=true')
+}*.name
 def unlisted = subprojects.findAll {
     def props = it.file('gradle.properties')
-    it.path.startsWith(':library:') && it.file('build.gradle').isFile() && props.isFile() && !props.text.contains('library_test=true') && !(it.name in libraryMods)
+    it.path.startsWith(':library:') && it.file('build.gradle').isFile() && props.isFile() && !props.text.contains('library_test=true') && !(it.name in libraryMods) && !(it.name in libraryJarOnly)
 }
 if (unlisted) throw new GradleException("Library mods missing from gradle/library.gradle's libraryMods: ${unlisted*.name}")
 
@@ -128,7 +133,7 @@ tasks.register('releaseLibrary', Sync) {
     from(packStill)
     from(serverOld)
     from(serverStill)
-    libraryJars(libraryMods).each { from(it) }
+    libraryJars(libraryMods + libraryJarOnly).each { from(it) }
     from(settingsJar())
     // A test build goes beside the real one, so the release folder only ever holds a checked build.
     into layout.projectDirectory.dir(libraryOut + (testBuild ? '-test' : ''))

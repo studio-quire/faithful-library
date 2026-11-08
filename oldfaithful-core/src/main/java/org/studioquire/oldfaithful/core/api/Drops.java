@@ -19,7 +19,7 @@ import net.minecraft.world.World;
  * spills isn't a drop.
  */
 public final class Drops {
-	/** Any cause: a player, an explosion, a piston, water, a block losing its support. */
+	/** Any cause: a player, an explosion, a piston, water, a block losing its support. Generation too, when a spring's water reaches a plant, so go by {@link #world} here: it may be one the server doesn't have yet. */
 	public static final class BlockDrops {
 		public final World world;
 		public final int x, y, z;

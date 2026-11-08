@@ -12,7 +12,7 @@ import org.studioquire.oldfaithful.selftest.WorldCheck;
 
 /**
  * Mods' tests on a server that has none of them, the core's alone or the real one: entrypoint {@code faithful:test-without}, a {@link ClientTest}. Nothing answers there, so no scenes, and no plot:
- * it's wherever the server spawned the player.
+ * it's wherever the server spawned the player, which can be in water, so a test that needs ground makes its own ({@link ClientTest#ownGround}).
  */
 public final class WithoutTests {
 	public static final String ENTRYPOINT = "faithful:test-without";

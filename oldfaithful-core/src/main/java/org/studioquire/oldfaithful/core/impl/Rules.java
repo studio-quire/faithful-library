@@ -20,7 +20,8 @@ import org.studioquire.oldfaithful.core.api.Commands;
 import org.studioquire.oldfaithful.core.api.Rule;
 
 /**
- * World rules: declared by mods, valued per world. Whoever runs the world owns them: a player in single player, the file or
+ * World rules: declared by mods, valued per world. A rule declared {@link Rule#atCreation at creation} is set only while there's no world yet, as
+ * a new world's starting value or in its file before it first opens, and is never changed inside one. Whoever runs the world owns them: a player in single player, the file or
  * {@code /rule} on a server; a client on a server only hears the server's values. The file holds only what was changed from a
  * rule's default, and a world nobody touched has no file. The install keeps one thing: what a new world starts with.
  * <p>
@@ -35,17 +36,23 @@ public final class Rules {
 	public static final String LOCK_KEY = "rules-locked";
 	/** Sent among the values, where no rule's id can be, since every one has a colon; a core that doesn't know it keeps it unread. */
 	private static final String LOCKED_ON_WIRE = "locked";
-	private static final String UNLOCK = "To unlock them, remove " + LOCK_KEY + "=true from the world's " + WorldFile.NAME + " with the server stopped.";
 
 	private abstract static class Declared implements Rule {
 		final String id;
 		final List<String> values;
 		final String defaultText;
+		final boolean creation;
 
-		Declared(String id, List<String> values, String defaultText) {
+		Declared(String id, List<String> values, String defaultText, boolean creation) {
 			this.id = id;
 			this.values = values;
 			this.defaultText = defaultText;
+			this.creation = creation;
+		}
+
+		@Override
+		public boolean atCreation() {
+			return creation;
 		}
 
 		@Override
@@ -73,8 +80,8 @@ public final class Rules {
 	}
 
 	private static final class Flag extends Declared implements BoolRule {
-		Flag(String id, boolean defaultValue) {
-			super(id, Arrays.asList("true", "false"), String.valueOf(defaultValue));
+		Flag(String id, boolean defaultValue, boolean creation) {
+			super(id, Arrays.asList("true", "false"), String.valueOf(defaultValue), creation);
 		}
 
 		@Override
@@ -94,8 +101,8 @@ public final class Rules {
 	}
 
 	private static final class Choice extends Declared implements ChoiceRule {
-		Choice(String id, List<String> values) {
-			super(id, values, values.get(0));
+		Choice(String id, List<String> values, boolean creation) {
+			super(id, values, values.get(0), creation);
 		}
 
 		@Override
@@ -132,13 +139,13 @@ public final class Rules {
 		return "rule." + id.replace(':', '.');
 	}
 
-	static BoolRule declare(String id, boolean defaultValue) {
-		return add(new Flag(id, defaultValue));
+	static BoolRule declare(String id, boolean creation, boolean defaultValue) {
+		return add(new Flag(id, defaultValue, creation));
 	}
 
-	static ChoiceRule declare(String id, String... values) {
+	static ChoiceRule declare(String id, boolean creation, String... values) {
 		if (values.length < 2) throw new IllegalArgumentException("The rule " + id + " has nothing to choose between");
-		return add(new Choice(id, Arrays.asList(values.clone())));
+		return add(new Choice(id, Arrays.asList(values.clone()), creation));
 	}
 
 	private static <R extends Declared> R add(R rule) {
@@ -183,7 +190,7 @@ public final class Rules {
 			}
 		}
 		for (Map.Entry<String, String> e : worldValues.entrySet()) System.out.println("[faithful-core] Rule " + e.getKey() + " = " + e.getValue());
-		if (locked) System.out.println("[faithful-core] This world's rules are locked (" + LOCK_KEY + " in " + dir.resolve(WorldFile.NAME) + ")");
+		if (locked) System.out.println("[faithful-core] This world's rules are locked");
 	}
 
 	/** On a server, before anything of the world loads. */
@@ -254,9 +261,13 @@ public final class Rules {
 		return v != null ? r.read(v.trim()) : r.defaultText;
 	}
 
-	/** A change from this game: to the open world, or with none open to what new worlds start with. */
+	/** A change from this game: to the open world, or with none open to what new worlds start with. A rule chosen at creation only takes the second. */
 	public static boolean change(Rule rule, String value) {
 		if (serverValues != null) return false;
+		if (world != null && rule.atCreation()) {
+			System.out.println("[faithful-core] " + rule.id() + " is as it was: a world chooses it when it's created");
+			return false;
+		}
 		if (world != null && locked) {
 			System.out.println("[faithful-core] " + rule.id() + " is as it was: this world's rules are locked");
 			return false;
@@ -331,9 +342,10 @@ public final class Rules {
 			reply.say(r.id + " is one of: " + String.join(", ", r.values));
 		} else if (world == null) {
 			reply.say("No world is open");
+		} else if (r.creation) {
+			reply.say(r.id + " was chosen when this world was created, and stays.");
 		} else if (locked) {
-			reply.say("This world's rules are locked, so they can't be changed, here or in game.");
-			reply.say(UNLOCK);
+			reply.say("This world's rules are locked, so they can't be changed.");
 		} else if (set(r.id, args[1].toLowerCase(java.util.Locale.ROOT))) {
 			reply.say(r.id + " = " + r.text());
 		} else {
@@ -348,17 +360,14 @@ public final class Rules {
 			reply.say("No world is open");
 		} else if (locked) {
 			reply.say("This world's rules are already locked.");
-			reply.say(UNLOCK);
 		} else if (args.length == 2 && args[1].equalsIgnoreCase("confirm")) {
 			if (lock()) {
 				reply.say("This world's rules are locked. Nothing in the game can change them now, " + slash + "rule included.");
-				reply.say(UNLOCK);
 			} else {
 				reply.say("Could not save that, so nothing is locked; see the log");
 			}
 		} else {
 			reply.say("Locking this world's rules can't be undone in game or with " + slash + "rule: nobody can change them after.");
-			reply.say("Only removing " + LOCK_KEY + "=true from the world's " + WorldFile.NAME + " with the server stopped unlocks them.");
 			reply.say("To lock them, type " + slash + "rule lock confirm");
 		}
 	}

@@ -5,8 +5,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
-abstract class Bottle extends Item {
-	Bottle(int id, int texture) {
+public abstract class Bottle extends Item {
+	protected Bottle(int id, int texture) {
 		super(id);
 		setTextureId(texture);
 	}
@@ -16,7 +16,7 @@ abstract class Bottle extends Item {
 	 * and otherwise in the inventory or at the player's feet. A server's packet handler only tells the client about the hand and swallows every other slot's
 	 * change, so the server sends those here, first; a client leaves it all to that.
 	 */
-	static ItemStack exchange(ItemStack stack, World world, PlayerEntity user, ItemStack result) {
+	protected static ItemStack exchange(ItemStack stack, World world, PlayerEntity user, ItemStack result) {
 		if (stack.count <= 1) return result;
 		if (world.isRemote) return stack;
 		stack.count--;

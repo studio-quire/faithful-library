@@ -11,4 +11,9 @@ public interface Rule {
 
 	/** Which of {@link #values} is beta's behaviour. */
 	String defaultText();
+
+	/** Whether a world chooses it once, when it's created, and keeps it: see {@link RuleSet#atCreation}. */
+	default boolean atCreation() {
+		return false;
+	}
 }

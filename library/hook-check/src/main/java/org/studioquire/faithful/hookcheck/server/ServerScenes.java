@@ -30,6 +30,11 @@ import net.minecraft.world.biome.EntitySpawnGroup;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.AlphaChunkStorage;
 import net.minecraft.world.chunk.storage.RegionIo;
+import net.minecraft.server.world.PlayerSaveHandler;
+import net.minecraft.world.WorldProperties;
+import net.minecraft.world.chunk.storage.ChunkStorage;
+import net.minecraft.world.dimension.Dimension;
+import net.minecraft.world.storage.WorldStorage;
 import org.studioquire.faithful.hookcheck.HookCheck;
 import org.studioquire.oldfaithful.core.api.Commands;
 import org.studioquire.oldfaithful.core.api.Fire;
@@ -60,6 +65,7 @@ public final class ServerScenes {
 			switch (args[0]) {
 				case "start": start(world); break;
 				case "chunks": chunks(world); break;
+				case "beingbuilt": beingBuilt(world); break;
 				case "players": players(world, player(args[1])); break;
 				case "blocks": blocks(world, player(args[1])); break;
 				case "drops": drops(world, player(args[1])); break;
@@ -123,6 +129,58 @@ public final class ServerScenes {
 		List<EntitySpawnGroup> list = (List<EntitySpawnGroup>) Biome.PLAINS.getSpawnableEntities(SpawnGroup.MONSTER);
 		long zombies = list.stream().filter(e -> e.clazz == ZombieEntity.class).count();
 		check("a natural spawn was added beside vanilla's: " + zombies, zombies == 2);
+	}
+
+	/** A world with nothing behind it: new each time, and nothing saved. */
+	private static final class NoStorage implements WorldStorage {
+		@Override public WorldProperties loadProperties() { return null; }
+		@Override public void checkSessionLock() { }
+		@Override public ChunkStorage getChunkStorage(Dimension dimension) { return null; }
+		@Override public void save(WorldProperties properties, List players) { }
+		@Override public void save(WorldProperties properties) { }
+		@Override public File getWorldPropertiesFile(String name) { return null; }
+		@Override public PlayerSaveHandler getPlayerSaveHandler() { return null; }
+		@Override public void forceSave() { }
+	}
+
+	/** A new world's spawn search comes inside {@code World}'s constructor, before {@code ServerWorld} has its fields, and can decorate chunks. In place of its chance of about 1 in 900 of a spring's water reaching a plant: that, certainly. */
+	private static final class BeingBuilt extends ServerWorld {
+		static final int X = 8, Y = 120, Z = 8;
+
+		BeingBuilt(long seed) {
+			super(null, new NoStorage(), "being-built", 0, seed);
+		}
+
+		@Override
+		protected void initializeSpawnPoint() {
+			eventProcessingEnabled = true;
+			getChunk(X >> 4, Z >> 4);
+			setBlock(X, Y - 1, Z, Block.DIRT.id);
+			setBlock(X + 1, Y - 1, Z, Block.STONE.id);
+			setBlock(X + 2, Y, Z, Block.STONE.id);
+			setBlock(X + 1, Y, Z - 1, Block.STONE.id);
+			setBlock(X + 1, Y, Z + 1, Block.STONE.id);
+			setBlock(X, Y, Z, Block.ROSE.id);
+			setBlock(X + 1, Y, Z, Block.FLOWING_WATER.id);
+			instantBlockUpdateEnabled = true;
+			Block.FLOWING_WATER.onTick(this, X + 1, Y, Z, random);
+			instantBlockUpdateEnabled = false;
+			eventProcessingEnabled = false;
+		}
+	}
+
+	private static void beingBuilt(ServerWorld real) {
+		BeingBuilt built = new BeingBuilt(real.getSeed());
+		long roses = 0, alive = 0;
+		for (Object o : built.entities) {
+			if (o instanceof ItemEntity && ((ItemEntity) o).stack.itemId == Block.ROSE.id) {
+				roses++;
+				if (!((ItemEntity) o).dead) alive++;
+			}
+		}
+		check("a spring's water breaks a plant while a new server world is being built, and the server comes through it: " + roses + " rose", roses > 0);
+		check("and that drop dies, as nothing could be tracking it", alive == 0);
+		check("and water stands where the rose was", built.getBlockId(BeingBuilt.X, BeingBuilt.Y, BeingBuilt.Z) == Block.FLOWING_WATER.id);
 	}
 
 	private static void chunks(ServerWorld w) {
