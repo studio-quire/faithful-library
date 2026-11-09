@@ -7,8 +7,8 @@ those releases have them, and Faithful Settings is Old Faithful's. Entries say w
 ## 0.2.2 (2026-11-09)
 
 Library packs for Old Faithful 0.2.3 and Still Faithful 0.4.1, on Pure Faithful 0.1.5. The packs now carry those
-releases; the library's own mods are unchanged. From Still Faithful 0.4.1 (in its pack): its Skeleton Arrows switch
-is gone, and skeletons shoot from above their heads, as in beta. Its changelog has the detail.
+releases; the library's own mods are unchanged. From Still Faithful 0.4.1 (in its pack): its Skeleton Arrows switch,
+off unless you turned it on, is gone. Its changelog has the detail.
 
 ## 0.2.1 (2026-11-09)
 
