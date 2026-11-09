@@ -99,6 +99,16 @@ public final class Towers {
 		return t.cx + " " + t.cz;
 	}
 
+	/** For the test driver: a tower's square as drawn, from its plan alone, in {@link PlanDump}'s form, so two builds can be shown to draw the same towers whatever else differs in their worlds. */
+	public static String planDump(World world, int x, int z, OutputStream out) throws IOException {
+		Keeper keeper = Keeper.of(world);
+		Keeper.Site site = keeper.site(x >> 4, z >> 4);
+		if (site == null) return "none";
+		Tower t = keeper.tower(site);
+		PlanDump.write(t, t.plan::get, out);
+		return t.cx + " " + t.cz;
+	}
+
 	/** For the test driver: each site in a square of chunks against what stands there, a line each. */
 	public static List<String> report(World world, int chunkX, int chunkZ, int size) {
 		Keeper keeper = Keeper.of(world);

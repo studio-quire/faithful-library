@@ -38,6 +38,29 @@ final class Survey {
 		Files.write(file, lines);
 	}
 
+	/** For each square of a square of squares, its site and a digest of its tower as drawn, a line each: rx rz x z digest, or rx rz none. */
+	static void plans(World world, int rx0, int rz0, int squares, Path file) throws IOException {
+		List<String> lines = new ArrayList<>();
+		if (TowerCheck.TOWERS) {
+			for (int rx = rx0; rx < rx0 + squares; rx++) {
+				for (int rz = rz0; rz < rz0 + squares; rz++) {
+					java.security.MessageDigest digest;
+					try {
+						digest = java.security.MessageDigest.getInstance("SHA-256");
+					} catch (java.security.NoSuchAlgorithmException e) {
+						throw new IllegalStateException(e);
+					}
+					java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+					String at = Towers.planDump(world, rx * 24 * 16, rz * 24 * 16, bytes);
+					StringBuilder hex = new StringBuilder();
+					for (byte b : digest.digest(bytes.toByteArray())) hex.append(String.format("%02x", b));
+					lines.add(rx + " " + rz + " " + (at.equals("none") ? "none" : at + " " + hex.substring(0, 24)));
+				}
+			}
+		}
+		Files.write(file, lines);
+	}
+
 	static void report(World world, int x0, int z0, int size, Path file) throws IOException {
 		if (!TowerCheck.TOWERS) Files.write(file, new byte[0]);
 		else Files.write(file, Towers.report(world, x0, z0, size));

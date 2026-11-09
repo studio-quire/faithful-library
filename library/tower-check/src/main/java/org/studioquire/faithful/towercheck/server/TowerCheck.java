@@ -33,6 +33,8 @@ public final class TowerCheck implements FaithfulMod {
 
 	private List<int[]> queue = new ArrayList<>();
 	private int perTick, position;
+	/** Each chunk's load in the last {@code gen}, decoration of its neighbours included, for {@code tools/gen_bench.py}. */
+	private long[] times;
 	private int quiet = -1;
 
 	@Override
@@ -65,7 +67,7 @@ public final class TowerCheck implements FaithfulMod {
 		return chunks;
 	}
 
-	/** {@code gen x0 z0 size order perTick}, {@code settle}, {@code sites x0 z0 size file}, {@code places rx0 rz0 squares margin file}, {@code tower x z file} (x and z any cell in its square), {@code cells x0 z0 size file}, {@code doors x0 z0 size file}, {@code crash saves}. */
+	/** {@code gen x0 z0 size order perTick}, {@code settle}, {@code sites x0 z0 size file}, {@code places rx0 rz0 squares margin file}, {@code plans rx0 rz0 squares file}, {@code tower x z file} (x and z any cell in its square), {@code cells x0 z0 size file}, {@code doors x0 z0 size file}, {@code crash saves}. */
 	private void command(String[] args) throws IOException {
 		switch (args[0]) {
 			case "gen":
@@ -91,6 +93,10 @@ public final class TowerCheck implements FaithfulMod {
 			case "cells":
 				cells(Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]), file(args[4]));
 				System.out.println(DONE + "cells");
+				break;
+			case "plans":
+				Survey.plans(world(), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]), file(args[4]));
+				System.out.println(DONE + "plans");
 				break;
 			case "report":
 				Survey.report(world(), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]), file(args[4]));
@@ -118,6 +124,19 @@ public final class TowerCheck implements FaithfulMod {
 		}
 	}
 
+	private static String timing(long[] nanos) {
+		long[] sorted = nanos.clone();
+		java.util.Arrays.sort(sorted);
+		long total = 0;
+		int over20 = 0;
+		for (long n : sorted) {
+			total += n;
+			if (n > 20_000_000L) over20++;
+		}
+		return String.format(java.util.Locale.ROOT, "chunks=%d total_ms=%.1f mean_ms=%.3f p50_ms=%.3f p99_ms=%.3f max_ms=%.2f over20=%d", sorted.length, total / 1e6, total / 1e6 / sorted.length,
+				sorted[sorted.length / 2] / 1e6, sorted[(int) (sorted.length * 0.99)] / 1e6, sorted[sorted.length - 1] / 1e6, over20);
+	}
+
 	private static World world() {
 		return Server.world(Worldgen.OVERWORLD);
 	}
@@ -131,11 +150,14 @@ public final class TowerCheck implements FaithfulMod {
 	private void tick(World world) {
 		if (world.dimension.id != Worldgen.OVERWORLD) return;
 		if (position < queue.size()) {
+			if (position == 0) times = new long[queue.size()];
 			for (int i = 0; i < perTick && position < queue.size(); i++, position++) {
 				int[] chunk = queue.get(position);
+				long start = System.nanoTime();
 				((ServerWorld) world).chunkCache.loadChunk(chunk[0], chunk[1]);
+				times[position] = System.nanoTime() - start;
 			}
-			if (position == queue.size()) System.out.println(DONE + "gen");
+			if (position == queue.size()) System.out.println(DONE + "gen " + timing(times));
 		}
 		if (quiet >= 0 && ++quiet >= 40) {
 			quiet = -1;

@@ -4,6 +4,18 @@ The Faithful Library's releases, newest first. One version number for Faithful C
 packs and server packages. Each names the edition releases its packs are built on, whose mods and LWJGL are inside as
 those releases have them, and Faithful Settings is Old Faithful's. Entries say what a player or server owner notices.
 
+## 0.2.1 (2026-11-09)
+
+Library packs for Old Faithful 0.2.3 and Still Faithful 0.4.0, on Pure Faithful 0.1.5. The packs carry those
+releases: servers that make new land faster from Pure Faithful, mobs that stop being solid as they die from Old
+Faithful, and from Still Faithful (in its pack) chests that pair as in later versions with one lid, shift-click into
+dispensers and furnaces and onto you for armour, and skeletons that can shoot from their eyes (off unless turned on).
+Their changelogs have the detail.
+
+- **Buried Towers** works out its towers in less time as new land is made, so a new tower holds the game up for less
+  of a moment, the first of each game most of all. Every tower comes out exactly as before: towers in your worlds
+  carry on as they were.
+
 ## 0.2.0 (2026-11-08)
 
 Library packs for Old Faithful 0.2.2 and Still Faithful 0.3.0, on Pure Faithful 0.1.4. Six new mods, and the packs

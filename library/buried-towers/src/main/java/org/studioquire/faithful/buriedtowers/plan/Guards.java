@@ -2,7 +2,6 @@ package org.studioquire.faithful.buriedtowers.plan;
 
 import static org.studioquire.faithful.buriedtowers.plan.Blocks.*;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +25,16 @@ final class Guards {
 	private final Random r;
 	private final int x0, z0, side;
 	private final byte[] light;
+	/** What {@link #at} finds in each cell of the box, worked out once, as the light and the spawners' places read most cells many times over; kept in step as spawners move. */
+	private final byte[] cells;
+	private static final byte[] OPACITY = new byte[256], LUMINANCE = new byte[256];
+
+	static {
+		for (int id = 0; id < 256; id++) {
+			OPACITY[id] = (byte) opacity(id);
+			LUMINANCE[id] = (byte) luminance(id);
+		}
+	}
 
 	private Guards(Tower t) {
 		this.t = t;
@@ -37,6 +46,17 @@ final class Guards {
 		z0 = t.cz - t.radius - margin;
 		side = t.radius * 2 + 1 + margin * 2;
 		light = new byte[side * side * Plan.HEIGHT];
+		cells = new byte[light.length];
+		for (int x = x0; x < x0 + side; x++) {
+			for (int z = z0; z < z0 + side; z++) {
+				int top = Integer.MIN_VALUE;
+				for (int y = 0; y < Plan.HEIGHT; y++) {
+					int c = p.get(x, y, z);
+					if (c == Plan.KEEP && top == Integer.MIN_VALUE) top = t.ground.top(x, z);
+					cells[index(x, y, z)] = (byte) (c != Plan.KEEP ? id(c) : y < top ? STONE : AIR);
+				}
+			}
+		}
 	}
 
 	static void post(Tower t) {
@@ -58,6 +78,7 @@ final class Guards {
 
 	/** What a cell holds, with the land standing in for what the plan leaves alone. */
 	private int at(int x, int y, int z) {
+		if (inBox(x, y, z)) return cells[index(x, y, z)] & 0xFF;
 		int c = p.get(x, y, z);
 		if (c != Plan.KEEP) return id(c);
 		return y < t.ground.top(x, z) ? STONE : AIR;
@@ -93,37 +114,43 @@ final class Guards {
 		}
 	}
 
+	/** A cell's light by the rule above, which comes out the same whatever order cells are taken in: each ends as the most any path from a source leaves it. */
 	private void light() {
-		ArrayDeque<int[]> queue = new ArrayDeque<>();
+		IntQueue queue = new IntQueue();
 		for (int x = x0; x < x0 + side; x++) {
 			for (int z = z0; z < z0 + side; z++) {
 				boolean sky = true;
 				for (int y = Plan.HEIGHT - 1; y >= 0; y--) {
-					int id = at(x, y, z), level = luminance(id);
-					if (sky && opacity(id) != 0) sky = false;
+					int i = index(x, y, z), id = cells[i] & 0xFF, level = LUMINANCE[id];
+					if (sky && OPACITY[id] != 0) sky = false;
 					if (sky) level = 15;
 					if (level > 0) {
-						light[index(x, y, z)] = (byte) level;
-						queue.add(new int[] {x, y, z});
+						light[i] = (byte) level;
+						queue.add(i);
 					}
 				}
 			}
 		}
-		int[][] steps = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+		int alongZ = Plan.HEIGHT, alongX = side * Plan.HEIGHT;
 		while (!queue.isEmpty()) {
-			int[] c = queue.remove();
-			int level = light[index(c[0], c[1], c[2])];
-			for (int[] s : steps) {
-				int x = c[0] + s[0], y = c[1] + s[1], z = c[2] + s[2];
-				if (!inBox(x, y, z)) continue;
-				int op = opacity(at(x, y, z));
-				if (op >= 15) continue;
-				int next = level - Math.max(1, op);
-				if (next > light[index(x, y, z)]) {
-					light[index(x, y, z)] = (byte) next;
-					queue.add(new int[] {x, y, z});
-				}
-			}
+			int i = queue.remove(), level = light[i];
+			int y = i % Plan.HEIGHT, column = i / Plan.HEIGHT, dx = column / side, dz = column % side;
+			if (dx + 1 < side) spread(queue, i + alongX, level);
+			if (dx > 0) spread(queue, i - alongX, level);
+			if (y + 1 < Plan.HEIGHT) spread(queue, i + 1, level);
+			if (y > 0) spread(queue, i - 1, level);
+			if (dz + 1 < side) spread(queue, i + alongZ, level);
+			if (dz > 0) spread(queue, i - alongZ, level);
+		}
+	}
+
+	private void spread(IntQueue queue, int i, int level) {
+		int op = OPACITY[cells[i] & 0xFF];
+		if (op >= 15) return;
+		int next = level - Math.max(1, op);
+		if (next > light[i]) {
+			light[i] = (byte) next;
+			queue.add(i);
 		}
 	}
 
@@ -212,12 +239,14 @@ final class Guards {
 
 	private void remove(int[] s) {
 		p.force(s[0], s[1], s[2], AIR);
+		if (inBox(s[0], s[1], s[2])) cells[index(s[0], s[1], s[2])] = AIR;
 		p.fixtures.remove(Plan.key(s[0], s[1], s[2]));
 		t.spawners--;
 	}
 
 	private int[] put(Spot s, String mob) {
 		p.force(s.x, s.y, s.z, cell(SPAWNER, 0));
+		if (inBox(s.x, s.y, s.z)) cells[index(s.x, s.y, s.z)] = SPAWNER;
 		p.fixture(s.x, s.y, s.z, "spawner:" + mob);
 		t.spawners++;
 		return new int[] {s.x, s.y, s.z};

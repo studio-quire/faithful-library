@@ -127,19 +127,28 @@ final class Keeper {
 		return null;
 	}
 
-	/** Land, mostly above the sea, not so steep the tower would hang off it, and with room above. */
+	/**
+	 * Land, mostly above the sea, not so steep the tower would hang off it, and with room above, from nine columns. Each test stays failed once failed, so it stops at the first that does, reading
+	 * land already worked out first: a place that won't do costs fewer chunks of terrain, and the answer is the same as from all nine.
+	 */
 	private boolean suits(int x, int z) {
-		int r = Tower.MAX_RADIUS, low = 999, high = 0, wet = 0, samples = 0;
-		for (int ax = x - r; ax <= x + r; ax += r) {
-			for (int az = z - r; az <= z + r; az += r) {
-				int top = ground.top(ax, az);
-				low = Math.min(low, top);
-				high = Math.max(high, top);
-				if (top < Ground.SEA) wet++;
-				samples++;
+		int r = Tower.MAX_RADIUS, samples = 9, low = 999, high = 0, wet = 0;
+		boolean[] read = new boolean[samples];
+		for (int pass = 0; pass < 2; pass++) {
+			int i = 0;
+			for (int ax = x - r; ax <= x + r; ax += r) {
+				for (int az = z - r; az <= z + r; az += r, i++) {
+					if (read[i] || pass == 0 && !ground.has(ax, az)) continue;
+					read[i] = true;
+					int top = ground.top(ax, az);
+					low = Math.min(low, top);
+					high = Math.max(high, top);
+					if (top < Ground.SEA) wet++;
+					if (wet * 3 > samples || high - low > 16 || high > 104) return false;
+				}
 			}
 		}
-		return wet * 3 <= samples && high - low <= 16 && high <= 104;
+		return true;
 	}
 
 	/** The tower of a site, worked out if it isn't kept. */
