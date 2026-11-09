@@ -10,6 +10,7 @@
   "entrypoints": {
     "faithful:mod": ["org.studioquire.faithful.towercheck.server.TowerCheck"]
   },
+  "mixins": ["tower-check.mixins.json"],
   "depends": {
     "faithful-core": "*"
   },

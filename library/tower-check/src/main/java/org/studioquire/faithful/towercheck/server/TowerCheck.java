@@ -122,6 +122,11 @@ public final class TowerCheck implements FaithfulMod {
 			default:
 				throw new IllegalArgumentException(args[0]);
 		}
+		Pace.hurry(waitingOnTicks());
+	}
+
+	private boolean waitingOnTicks() {
+		return position < queue.size() || quiet >= 0;
 	}
 
 	private static String timing(long[] nanos) {
@@ -163,6 +168,7 @@ public final class TowerCheck implements FaithfulMod {
 			quiet = -1;
 			System.out.println(DONE + "settle");
 		}
+		Pace.hurry(waitingOnTicks());
 	}
 
 	/**

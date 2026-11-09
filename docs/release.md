@@ -106,7 +106,7 @@ README and notices header) and builds both from the same templates; Old Faithful
 `release/old-faithful/`. A project marked `oldfaithful_edition=fixed` that the script's `fixedMods` doesn't list stops
 the build, so a new Old Faithful mod is placed in the pack and server package on purpose. Still Faithful's edition is
 added to `releaseEditions` by `gradle/still-faithful.gradle` (its texts in `release/still-faithful/`), with the same
-rule for its `stillMods`. The library's two packs are added by `gradle/library.gradle` (`release/library/`), with the same rule for its `libraryMods`, against every mod in `library/` without `library_test=true` or `library_jar_only=true`; the second is a jar in the release and nothing more.
+rule for its `stillMods`. The library's two packs are added by `gradle/library.gradle` (`release/library/`), with the same rule for its `libraryMods`, against every mod in `library/` without `library_test=true` or `library_jar_only=true`; the second is a jar in the release and nothing more. The library's pack test names the packs' mods too, so a new one goes into its lists as well: `buildSrc/.../LibraryPackTestTask.java` (the loader's list, the server's jars, the mods a vanilla client can join with) and the Mods menu's names and ids in `harness/.../SettingsCheck.java`.
 
 ## The pack
 
