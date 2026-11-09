@@ -7,9 +7,9 @@ those releases have them, and Faithful Settings is Old Faithful's. Entries say w
 ## 0.2.1 (2026-11-09)
 
 Library packs for Old Faithful 0.2.3 and Still Faithful 0.4.0, on Pure Faithful 0.1.5. The packs carry those
-releases: servers that make new land faster from Pure Faithful, mobs that stop being solid as they die from Old
-Faithful, and from Still Faithful (in its pack) chests that pair as in later versions with one lid, shift-click into
-dispensers and furnaces and onto you for armour, and skeletons that can shoot from their eyes (off unless turned on).
+releases: from Pure Faithful, servers that make new land faster; from Old Faithful, mobs that stop being solid as they
+die; and from Still Faithful (in its pack), chests that pair as in later versions with one lid, shift-click that fills
+dispensers and furnaces and puts armour on, and skeletons that can shoot from their eyes (off unless turned on).
 Their changelogs have the detail.
 
 - **Buried Towers** works out its towers in less time as new land is made, so a new tower holds the game up for less
