@@ -35,6 +35,10 @@ The mods:
 - Blue Flowers: a blue flower in patches across Taiga and Tundra, as dandelions grow in warmer land. New chunks only.
   It's placed and picked like the rose and dandelion, and makes two light blue dye. Bonemeal on grass in those biomes can
   grow one too.
+- Wild Saplings: saplings grow every tree that grows wild, so a forest you cut down can be planted again. A spruce
+  sapling grows a tall, thin pine one time in three, as a third of Taiga's trees are. An oak sapling grows a big oak as
+  often as the wild oaks where it's planted are big: one time in three in Forest and Rainforest, one in ten elsewhere,
+  as in beta. And its big oaks are as full as wild ones, where beta's had smaller clumps of leaves.
 - Item Repair: two worn tools, weapons or pieces of armour of the same kind in the crafting grid make one, with what
   was left of both, up to as good as new, as in later versions. A world rule, Repair Bonus, off to start with, adds a
   twentieth of a new one's durability on top.
@@ -45,7 +49,8 @@ The mods:
 On a server: World Rules runs where the world runs, so a server can use it with any client, vanilla too. Hearty Food does
 too, with food healing over time for everyone there, though only a player who has it too
 sees the pale hearts; on a server without it, food is beta's. Item Repair runs where the world runs too: any client can
-mend on a server with it, and nothing is mended on one without it. Plain F3 and No Toasts are yours alone and work anywhere. A server running Water Bottles, Alchemy, Blue Flowers or Buried Towers needs every player
+mend on a server with it, and nothing is mended on one without it. Wild Saplings runs where the world runs too: any
+client gets its trees on a server with it, and on one without it saplings grow as in beta. Plain F3 and No Toasts are yours alone and work anywhere. A server running Water Bottles, Alchemy, Blue Flowers or Buried Towers needs every player
 to have it: anyone else is refused with a message saying so. If you have any library mod on, the refusal screen's Match
 This Server's Mods turns on what that server needs, for your next launch; with none on, turn them on as above.
 With them on you can still join servers without them, where they can't be made.
@@ -55,8 +60,8 @@ own mod channels you share, but isn't told which other mods you have.
 Turning a mod off or removing it:
 - Your world opens without it. World Rules' choices stay in the world's file and come back with the mod; the hour may
   jump if you'd changed the day's length. Towers already built stay, as ordinary blocks, and new chunks go back to beta's
-  dungeons. Hearty Food's healing still to come waits in your save and goes on if the mod returns. Plain F3 and No Toasts
-  leave nothing behind.
+  dungeons. Hearty Food's healing still to come waits in your save and goes on if the mod returns. Trees Wild Saplings
+  grew stay. Plain F3 and No Toasts leave nothing behind.
 - Water Bottles' items don't survive: bottles in that world become bowls for good, the next time you open it. Alchemy
   goes off with it, as it needs it.
 - Alchemy's don't either: golden roses become roses and potions become bowls, for good.

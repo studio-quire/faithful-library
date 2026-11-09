@@ -12,7 +12,7 @@
 if (findProject(':oldfaithful-core') == null || !releaseEditions.containsKey('still')) return
 
 // A new mod of the library must be placed here on purpose; test-only mods say library_test=true.
-def libraryMods = ['alchemy', 'blue-flowers', 'buried-towers', 'hearty-food', 'item-repair', 'no-toasts', 'plain-f3', 'water-bottles', 'world-rules']
+def libraryMods = ['alchemy', 'blue-flowers', 'buried-towers', 'hearty-food', 'item-repair', 'no-toasts', 'plain-f3', 'water-bottles', 'wild-saplings', 'world-rules']
 // A public jar in the release and nothing more: in no pack or server package, for what shouldn't be on by default. They say library_jar_only=true.
 def libraryJarOnly = subprojects.findAll {
     def props = it.file('gradle.properties')

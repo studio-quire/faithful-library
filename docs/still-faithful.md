@@ -316,6 +316,10 @@ Without the saves mod the switch does nothing (beta's own writer isn't crash-saf
 
 ## Tests
 
+- While iterating on one change, its own check alone: `./gw :harness:clientStartupTestStill -Ptest.only=still` (or
+  `fence`, `chat`, `dusk`, `skin`, `shiftclick`, `fixes`, `options`, `settings`, `window`, several with commas), about
+  half a minute where the whole test takes 1 to 2 minutes; the whole test, and `-Pstill.beta` where a switch changed,
+  once before the change is done (`docs/building.md` > What game runs cost).
 - `ShiftClickCheck` (in the same run, 2026-11-09): mouse and key events put into our LWJGL component's queues, read by
   the open screen as the real ones are. A helmet from the inventory and boots from the hotbar go on; a second helmet
   and a stack of pumpkins move as beta's; in a furnace iron ore goes on top, coal below, gold ore stays put beside the

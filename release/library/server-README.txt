@@ -45,6 +45,9 @@ it's the plain @EDITION_NAME@ server: the library's code isn't loaded and nothin
 - alchemy: health potions from gilded roses. Every player needs it, in the same way. It needs water-bottles, so that goes
   out only with it.
 - blue-flowers: a blue flower in patches across Taiga and Tundra, in new chunks. Every player needs it, in the same way.
+- wild-saplings: saplings grow every tree that grows wild, as often as it grows wild: spruce saplings grow pines too, and
+  oak saplings grow big oaks a third of the time in Forest and Rainforest, as full as wild ones. Any client can join,
+  vanilla too.
 
 Plain F3 and No Toasts are client-only, so they aren't here, and players can use them on any server.
 

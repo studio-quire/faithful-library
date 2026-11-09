@@ -4,6 +4,17 @@ The Faithful Library's releases, newest first. One version number for Faithful C
 packs and server packages. Each names the edition releases its packs are built on, whose mods and LWJGL are inside as
 those releases have them, and Faithful Settings is Old Faithful's. Entries say what a player or server owner notices.
 
+## 0.2.3 (2026-11-09)
+
+Library packs for Old Faithful 0.2.3 and Still Faithful 0.4.1, on Pure Faithful 0.1.5, as in 0.2.2. One new mod, on
+in the packs and server packages.
+
+- **Wild Saplings**, a new mod: saplings grow every tree that grows wild, so a forest you cut down can be planted again.
+  A spruce sapling grows a tall, thin pine one time in three, as a third of Taiga's trees are. An oak sapling grows a
+  big oak as often as the wild oaks where it's planted are big: one time in three in Forest and Rainforest, one in ten
+  elsewhere, as in beta. And its big oaks are as full as wild ones, where beta's had smaller clumps of leaves. It runs
+  where the world runs, so a server can use it with any client, vanilla too.
+
 ## 0.2.2 (2026-11-09)
 
 Library packs for Old Faithful 0.2.3 and Still Faithful 0.4.1, on Pure Faithful 0.1.5. The packs now carry those

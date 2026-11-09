@@ -392,10 +392,19 @@ if (!stillMods.isEmpty() && !fixedMods.isEmpty()) {
 }
 // -Ptest.speed=N: game time N times as fast in every hidden client's single player, and on library servers (with the
 // harness probe) and the clients that join them; anything else stays at 20 ticks a second (ClientStartupTask's tickMs,
-// docs/building.md).
+// docs/building.md). Without it the tests below run at 4, as releases run them (docs/release.md), and -Ptest.speed=1
+// gives them the game's own pace, for a change that touches timing. The rest keep the game's pace unless told: the
+// pack tests (what players get), the picture tasks (their settling counts ticks) and the hunts.
 def testSpeed = providers.gradleProperty('test.speed')
+def fastUnlessTold = ['clientStartupTest', 'clientStartupTestFixed', 'clientStartupTestStill', 'clientStartupTestLibrary',
+                      'librarySelftest', 'libraryTest', 'libraryContentTest', 'libraryContentTestStill', 'libraryApiTest'] as Set
+// -Ptest.only=fence,chat on an edition's start-up test: only those checks in the world (ClientStartupTask's only).
+def testOnly = providers.gradleProperty('test.only')
+def takesOnly = ['clientStartupTestFixed', 'clientStartupTestStill'] as Set
 tasks.withType(oldfaithful.gradle.ClientStartupTask).configureEach {
-    if (testSpeed.isPresent()) tickMs = Math.max(1, Math.round(50 / (testSpeed.get() as double)) as int)
+    def speed = testSpeed.isPresent() ? (testSpeed.get() as double) : fastUnlessTold.contains(name) ? 4d : 1d
+    tickMs = Math.max(1, Math.round(50 / speed) as int)
+    if (testOnly.isPresent() && takesOnly.contains(name)) only = testOnly.get()
 }
 // Pictures of the real game for the site (SceneShot, docs/release.md): Old Faithful's mods, a 1440x900 hidden
 // window, lava lying in caves near the spawn of -PsceneSeed (default 7373), shots in local/run/scene-shot/shots/.

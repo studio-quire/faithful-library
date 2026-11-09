@@ -38,6 +38,10 @@ Windows now.
 - **Blue Flowers**: a blue flower in patches across Taiga and Tundra, as dandelions grow in warmer land. New chunks only.
   It's placed and picked like the rose and dandelion, and makes two light blue dye. Bonemeal on grass in those biomes can
   grow one too.
+- **Wild Saplings**: saplings grow every tree that grows wild, so a forest you cut down can be planted again. A spruce
+  sapling grows a tall, thin pine one time in three, as a third of Taiga's trees are. An oak sapling grows a big oak as
+  often as the wild oaks where it's planted are big: one time in three in Forest and Rainforest, one in ten elsewhere,
+  as in beta. And its big oaks are as full as wild ones, where beta's had smaller clumps of leaves.
 - **Item Repair**: two worn tools, weapons or pieces of armour of the same kind in the crafting grid make one, with what
   was left of both, up to as good as new, as in later versions. Shears, fishing rods and flint and steel too. A
   world rule, Repair Bonus, adds a twentieth of a new one's durability on top, as later versions did; it's off to start
@@ -86,6 +90,8 @@ says more.
   player who has it too sees the pale hearts. With it on a server without it, food is beta's.
 - **Item Repair** runs where the world runs too, so a server can use it with any client, vanilla beta 1.7.3 too. With it on a
   server without it, nothing is mended.
+- **Wild Saplings** runs where the world runs too, so a server can use it with any client, vanilla beta 1.7.3 too. With it
+  on a server without it, saplings grow as in beta.
 - **Water Bottles**, **Alchemy**, **Blue Flowers** and **Buried Towers** need every player to have them: the first three add blocks or items, and Buried Towers builds on the library's world generation, which needs it too. A server running one
   refuses anyone without it, vanilla clients included, with a message saying so. A player on a library pack with any mod
   on is offered **Match This Server's Mods**, which turns on what that server needs for their next launch. A client with
@@ -113,6 +119,7 @@ original game too. What you lose, plainly:
 - **Blue Flowers**: its flowers don't survive. Growing or carried, in that world they become roses, for good.
 - **Hearty Food**: food goes back to beta's. Healing still to come waits in the player's save and goes on if the mod returns.
 - **Item Repair**: nothing. What it mended stays mended, and Repair Bonus, if you turned it on, stays in the world's file.
+- **Wild Saplings**: nothing. Trees it grew stay, and saplings grow as in beta again.
 - **Plain F3** and **No Toasts** leave nothing in a world.
 
 While any library mod is on, Faithful Core is loaded and warns you before a world that's seen a removed content mod
