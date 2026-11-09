@@ -4,6 +4,12 @@ The Faithful Library's releases, newest first. One version number for Faithful C
 packs and server packages. Each names the edition releases its packs are built on, whose mods and LWJGL are inside as
 those releases have them, and Faithful Settings is Old Faithful's. Entries say what a player or server owner notices.
 
+## 0.2.2 (2026-11-09)
+
+Library packs for Old Faithful 0.2.3 and Still Faithful 0.4.1, on Pure Faithful 0.1.5. The packs now carry those
+releases; the library's own mods are unchanged. From Still Faithful 0.4.1 (in its pack): its Skeleton Arrows switch
+is gone, and skeletons shoot from above their heads, as in beta. Its changelog has the detail.
+
 ## 0.2.1 (2026-11-09)
 
 Library packs for Old Faithful 0.2.3 and Still Faithful 0.4.0, on Pure Faithful 0.1.5. The packs carry those

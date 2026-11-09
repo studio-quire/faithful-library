@@ -2,6 +2,7 @@ package org.studioquire.faithful.blueflowers.selftest.client;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.resource.language.TranslationStorage;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import org.studioquire.faithful.blueflowers.BlueFlowers;
@@ -31,9 +32,30 @@ public final class FlowersClientTest extends ClientTest {
 		});
 	}
 
-	/** A short diagonal walk, in steps small enough that a server takes them as walking. */
-	private void walk(double step) {
-		for (int i = 0; i < 8; i++) then(() -> mc.player.setPosition(mc.player.x + step, mc.player.y, mc.player.z + step));
+	/** One step toward a point, small enough that a server takes it as walking; true once there. */
+	private boolean stepToward(double tx, double tz) {
+		double dx = tx - mc.player.x, dz = tz - mc.player.z, d = Math.sqrt(dx * dx + dz * dz);
+		if (d < 0.05) return true;
+		double s = Math.min(0.1, d) / d;
+		mc.player.setPosition(mc.player.x + dx * s, mc.player.y, mc.player.z + dz * s);
+		return false;
+	}
+
+	/** The nearest dropped stack of the item the client knows of, or null. */
+	private ItemEntity drop(Item item) {
+		ItemEntity best = null;
+		double nearest = 8 * 8;
+		for (Object o : mc.world.entities) {
+			if (!(o instanceof ItemEntity)) continue;
+			ItemEntity e = (ItemEntity) o;
+			if (e.dead || e.stack == null || e.stack.getItem() != item) continue;
+			double d = e.getSquaredDistance(mc.player);
+			if (d < nearest) {
+				nearest = d;
+				best = e;
+			}
+		}
+		return best;
 	}
 
 	@Override
@@ -59,11 +81,22 @@ public final class FlowersClientTest extends ClientTest {
 		await("it to break on one hit", LIMIT, () -> mc.world.getBlockId(x + 1, feet, z + 1) == 0);
 		wait(10);
 		scene("broken");
-		walk(0.1);
-		until("the player to pick it up", 200, () -> carried(flowerItem) == 4);
+		double[] home = new double[2];
+		then(() -> {
+			home[0] = mc.player.x;
+			home[1] = mc.player.z;
+		});
+		// To wherever it landed: a broken block throws its drop sideways at a random speed, so a fixed walk sometimes
+		// stopped out of reach.
+		until("the player to pick it up", 200, () -> {
+			if (carried(flowerItem) == 4) return true;
+			ItemEntity e = drop(flowerItem);
+			if (e != null) stepToward(e.x, e.z);
+			return false;
+		});
 		wait(10);
 		scene("carrying");
-		walk(-0.1);
+		await("back where it started", LIMIT, () -> stepToward(home[0], home[1]));
 		wait(10);
 
 		place(-1, 0);
