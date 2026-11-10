@@ -6,6 +6,7 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import org.studioquire.faithful.blueflowers.BlueFlowers;
+import org.studioquire.faithful.blueflowers.client.BlueFlowersClient;
 import org.studioquire.faithful.blueflowers.selftest.FlowersTest;
 import org.studioquire.faithful.harness.test.client.ClientTest;
 
@@ -66,7 +67,16 @@ public final class FlowersClientTest extends ClientTest {
 		z = (int) Math.floor(mc.player.z);
 		Item flowerItem = Item.ITEMS[BlueFlowers.flower.get().id];
 		int id = BlueFlowers.flower.get().id;
-		then(() -> check("it's called Blue Flower", "Blue Flower".equals(TranslationStorage.getInstance().get(flowerItem.getTranslationKey() + ".name"))));
+		then(() -> {
+			TranslationStorage names = TranslationStorage.getInstance();
+			String yellow = Item.ITEMS[Block.DANDELION.id].getTranslationKey() + ".name";
+			check("it's called Bluebell", "Bluebell".equals(names.get(flowerItem.getTranslationKey() + ".name")));
+			check("beta's yellow flower is called Dandelion", "Dandelion".equals(names.get(yellow)));
+			BlueFlowersClient.dandelion(false);
+			String off = names.get(yellow);
+			BlueFlowersClient.dandelion(true);
+			check("and Flower with the switch off, Dandelion again on: " + off, "Flower".equals(off) && "Dandelion".equals(names.get(yellow)));
+		});
 		scene("grass row");
 		scene("kit");
 		await("the kit in the hand", LIMIT, () -> carried(flowerItem) == 4);

@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 /**
  * A mod's test where the world runs: single player's game, or the server with a real client joined. One class for both places, under the entrypoint {@code faithful:test} in the selftest's
  * {@code fabric.mod.json}. It's common code, so it mustn't reach the client (`libraryStatic` reads it). It runs in a fresh world, then again in the same world after a save and a restart,
- * with {@link #restarted()} true and the player back on the same spot. Before each: the player's inventory is emptied, and they stand at {@link #x}, {@link #y}, {@link #z} on a stone floor
+ * with {@link #restarted()} true and the player back on the same spot. Before each: the player's inventory is emptied, the hotbar's first slot is the one held, and they stand at {@link #x}, {@link #y}, {@link #z} on a stone floor
  * reaching {@link #PLOT} cells each way, with the air above it clear. That plot is the test's: other mods' tests have their own.
  */
 public abstract class WorldTest extends Script {

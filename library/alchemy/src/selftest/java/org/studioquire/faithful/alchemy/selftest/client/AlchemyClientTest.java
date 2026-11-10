@@ -1,27 +1,42 @@
 package org.studioquire.faithful.alchemy.selftest.client;
 
-import java.util.Arrays;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.resource.language.TranslationStorage;
+import net.minecraft.client.util.ScreenScaler;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.util.math.MathHelper;
 import org.studioquire.faithful.alchemy.Alchemy;
+import org.studioquire.faithful.alchemy.Timed;
+import org.studioquire.faithful.alchemy.Ward;
+import org.studioquire.faithful.alchemy.client.Bottles;
+import org.studioquire.faithful.alchemy.selftest.AlchemyTest;
 import org.studioquire.faithful.harness.test.client.ClientTest;
 import org.studioquire.faithful.waterbottles.WaterBottles;
 import org.studioquire.oldfaithful.core.api.Attachment;
+import org.studioquire.oldfaithful.core.api.Names;
 import org.studioquire.oldfaithful.core.api.client.Renderers;
 
-/** A client's real clicks at the bench and in the inventory, its real right clicks where a server has the last word, and the pictures. */
+/**
+ * A client's real clicks at the bench and in the inventory, its real right clicks where a server has the last word, real falls, what it hears of the effects, and the HUD in pictures, read back
+ * half pip by half pip and bottle by bottle.
+ */
 public final class AlchemyClientTest extends ClientTest {
 	private static final int LIMIT = 40;
 	/** The first hotbar slot in each screen: the bench's grid is nine cells and the inventory's four and four of armour. */
 	private static final int BENCH_HOTBAR = 37, INVENTORY_HOTBAR = 36;
+	/** A drop whose beta damage, {@code ceil(fall - 3)} of the distance it counts, is 5 or 6. */
+	private static final double FALL = 8.5;
 
 	private Item rose, weak, plain, strong, glass;
 	private int x, feet, z;
@@ -184,7 +199,7 @@ public final class AlchemyClientTest extends ClientTest {
 			drink();
 			check("a client that thinks it's whole doesn't stop it", holding(weak, 1));
 		});
-		until("the server drinks, and says so", LIMIT, () -> holding(glass, 1) && mc.player.health == 12);
+		until("the server drinks, and says so", LIMIT, () -> holding(glass, 1) && mc.player.health == 10);
 
 		scene("kit", "weak", 1);
 		scene("health", 20);
@@ -212,6 +227,76 @@ public final class AlchemyClientTest extends ClientTest {
 		scene("expect", "glass", 1);
 	}
 
+	/** A ward and a haste potion by real right clicks: what the client hears is what its HUD and its own walking and mining go by. */
+	private void effectsHeard() {
+		scene("effects", "none", 0, 0, 0, 0);
+		scene("kit", "ward", 1, "haste", 1);
+		await("the potions in the hand and nothing running", LIMIT, () -> holding(Alchemy.ward.get(0).get(), 1) && !Alchemy.hasted.running(mc.player) && Ward.points(mc.player) == 0);
+		then(this::drink);
+		until("a weak ward: the client hears a whole set of the weak's toughness, a full bar", LIMIT,
+				() -> Ward.wear.get(mc.player) == Alchemy.WARD[0] && Ward.whole.get(mc.player) == Alchemy.WARD[0] && Ward.points(mc.player) == Ward.BAR && holding(glass, 1));
+		then(() -> {
+			mc.player.inventory.selectedSlot = 1;
+			drink();
+		});
+		until("a weak haste: the client hears two rows of its bottle", LIMIT, () -> Alchemy.hasted.shown.get(mc.player) == 2 && Alchemy.hasted.running(mc.player));
+		scene("expect ward", Alchemy.WARD[0]);
+		scene("expect haste", 4 * Timed.TICKS_A_MINUTE - 100);
+		scene("effects", "none", 0, 0, 0, 0);
+		then(() -> mc.player.inventory.selectedSlot = 0);
+	}
+
+	/** How far one tick of walking forward from standing pushes the client's own player, put back where it stood. */
+	private float walked() {
+		double px = mc.player.x, py = mc.player.y, pz = mc.player.z;
+		boolean ground = mc.player.onGround;
+		mc.player.velocityX = mc.player.velocityY = mc.player.velocityZ = 0;
+		mc.player.onGround = true;
+		mc.player.travel(0.0F, 1.0F);
+		float pushed = MathHelper.sqrt(mc.player.velocityX * mc.player.velocityX + mc.player.velocityZ * mc.player.velocityZ);
+		mc.player.setPosition(px, py, pz);
+		mc.player.onGround = ground;
+		mc.player.velocityX = mc.player.velocityY = mc.player.velocityZ = 0;
+		return pushed;
+	}
+
+	/** On a server, where the client walks and paces its own mining by what it heard. */
+	private void hasteOnClient() {
+		float[] before = {0, 0};
+		scene("effects", "none", 0, 0, 0, 0);
+		scene("kit", "gold", 1);
+		await("nothing running", LIMIT, () -> !Alchemy.hasted.running(mc.player) && held() != null);
+		then(() -> {
+			before[0] = walked();
+			before[1] = Block.STONE.getHardness(mc.player);
+		});
+		scene("effects", "none", 0, 0, 3, 0);
+		await("haste heard", LIMIT, () -> Alchemy.hasted.running(mc.player));
+		then(() -> {
+			float walk = walked(), mine = Block.STONE.getHardness(mc.player);
+			check("the client walks 20% faster (" + before[0] + " to " + walk + ") and mines 20% faster (" + before[1] + " to " + mine + ")",
+					Math.abs(walk / before[0] - Alchemy.HASTE) < 1e-3 && Math.abs(mine / before[1] - Alchemy.HASTE) < 1e-4);
+		});
+		scene("effects", "none", 0, 0, 0, 0);
+	}
+
+	/**
+	 * Lifted {@link #FALL} over the plot's floor and let go, as a server sees a client fall. Beta counts a fall's distance up to the move before the one that lands, so its damage here is 5 or 6 by
+	 * where the last tick's step falls; a third of either is 2.
+	 */
+	private void falls(boolean feather, int least, int most) {
+		scene("feather", feather ? "on" : "off");
+		scene("health", 20);
+		await("the feather " + (feather ? "heard" : "gone") + " and the bar full", LIMIT, () -> Alchemy.feathered.running(mc.player) == feather && mc.player.health == 20 && mc.player.onGround);
+		then(() -> mc.player.setPosition(mc.player.x, mc.player.y + FALL, mc.player.z));
+		await("off the ground", LIMIT, () -> !mc.player.onGround);
+		await("and down again", LIMIT * 2, () -> mc.player.onGround);
+		wait(10);
+		scene("expect health", 20 - most, 20 - least);
+		until("a fall of " + FALL + (feather ? " with the feather" : "") + " takes " + least + " to " + most + " as the client sees it", LIMIT,
+				() -> mc.player.health >= 20 - most && mc.player.health <= 20 - least);
+	}
+
 	@SuppressWarnings("unchecked")
 	private static Attachment<PlayerEntity, Integer> endsAt() {
 		try {
@@ -229,7 +314,7 @@ public final class AlchemyClientTest extends ClientTest {
 		await("ghost hearts for the bread, and the potion in the hand", LIMIT, () -> end.get(mc.player) == 10 && mc.player.health == 2 && holding(weak, 1));
 		wait(1);
 		then(this::drink);
-		await("a potion over it: hearts at once, and the ghost hearts on past them by what's coming", LIMIT, () -> holding(glass, 1) && mc.player.health >= 10 && end.get(mc.player) == 18);
+		await("a potion over it: hearts at once, and the ghost hearts on past them by what's coming", LIMIT, () -> holding(glass, 1) && mc.player.health >= 8 && end.get(mc.player) == 16);
 		picture("ghost-hearts-after-a-potion");
 		scene("health", 20);
 		await("the ghost hearts gone at a full bar", LIMIT, () -> mc.player.health == 20 && end.get(mc.player) == 0);
@@ -240,13 +325,149 @@ public final class AlchemyClientTest extends ClientTest {
 		return a.length == b.length;
 	}
 
-	private static boolean allGold(int[] pixels) {
-		return Arrays.stream(pixels).allMatch(p -> p >>> 24 == 0 || (p >> 16 & 255) >= (p >> 8 & 255) && (p >> 8 & 255) > (p & 255));
+	/** Each golden thing has its own thing's outline, from the game's atlas. */
+	private void gilding() {
+		Object[][] pairs = {{new ItemStack(Block.ROSE), rose}, {new ItemStack(Block.DANDELION), Alchemy.goldenDandelion.get()}, {new ItemStack(Item.FEATHER), Alchemy.goldenFeather.get()},
+				{Names.block(Alchemy.BLUEBELL) == null ? null : new ItemStack(Names.block(Alchemy.BLUEBELL)), Alchemy.goldenBluebell.get()}};
+		for (Object[] pair : pairs) {
+			if (pair[0] == null) continue;
+			Item golden = (Item) pair[1];
+			check(golden.getTranslationKey() + " has its thing's outline", sameShape(Renderers.tilePixels((ItemStack) pair[0]), Renderers.tilePixels(new ItemStack(golden))));
+		}
 	}
 
-	private void gilding() {
-		int[] theRose = Renderers.tilePixels(new ItemStack(Block.ROSE)), gilded = Renderers.tilePixels(new ItemStack(rose));
-		check("the golden rose has the rose's shape, in gold", sameShape(theRose, gilded) && allGold(gilded) && Arrays.stream(gilded).anyMatch(p -> p >>> 24 != 0));
+	private BufferedImage shot(String name) {
+		try {
+			return ImageIO.read(new File("shots/" + checks().mod() + "/" + name + ".png"));
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	/** A pixel of the HUD, by GUI units: the middle of that unit's square in the picture. */
+	private static int pixel(BufferedImage image, ScreenScaler screen, int gx, int gy) {
+		int k = screen.scaleFactor;
+		return image.getRGB(gx * k + k / 2, gy * k + k / 2);
+	}
+
+	/** A half pip: A worn armour's grey, B blue, . empty, ? anything else. */
+	private static char halfPip(int rgb) {
+		int r = rgb >> 16 & 255, g = rgb >> 8 & 255, b = rgb & 255;
+		if (r > 0x90 && g > 0x90 && b > 0x90 && Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) < 0x20) return 'A';
+		if (b > 0x90 && b - r > 0x40) return 'B';
+		if (Math.max(r, Math.max(g, b)) < 0x70) return '.';
+		return '?';
+	}
+
+	/** The armour bar's twenty half pips from the first, each pip's inner half then its outer: the fill's row in beta's sprites, at the middle of each half. */
+	private String bar(BufferedImage image) {
+		ScreenScaler screen = new ScreenScaler(mc.options, mc.displayWidth, mc.displayHeight);
+		int y = screen.getScaledHeight() - 32 + 4;
+		StringBuilder halves = new StringBuilder();
+		for (int pip = 0; pip < 10; pip++) {
+			int left = screen.getScaledWidth() / 2 + 91 - 9 - pip * 8;
+			halves.append(halfPip(pixel(image, screen, left + 6, y))).append(halfPip(pixel(image, screen, left + 2, y)));
+		}
+		return halves.toString();
+	}
+
+	private static String expectedBar(int armour, int blue) {
+		int total = Math.min(Ward.BAR, armour + blue), worn = total - blue;
+		StringBuilder halves = new StringBuilder();
+		for (int point = 1; point <= Ward.BAR; point++) halves.append(point <= worn ? 'A' : point <= total ? 'B' : '.');
+		return halves.toString();
+	}
+
+	/** {@code armour} none, helmet, chest or set, with the worn armour's points; the blue's wear left and whole; haste's and the feather's steps, which draw nothing on the play screen. */
+	private void hud(String name, String armour, int armourPoints, int wear, int whole, int haste, int feather) {
+		scene("effects", armour, wear, whole, haste, feather);
+		await("the client hears it all", LIMIT, () -> Ward.wear.get(mc.player) == wear && Ward.whole.get(mc.player) == (wear > 0 ? whole : 0) && Alchemy.hasted.shown.get(mc.player) == haste
+				&& Alchemy.feathered.shown.get(mc.player) == feather && mc.player.getTotalArmorDurability() == armourPoints);
+		wait(2);
+		picture(name);
+		then(() -> {
+			BufferedImage image = shot(name);
+			if (!check(name + ": the picture reads", image != null)) return;
+			int blue = Ward.points(wear, whole);
+			if (armourPoints + blue > 0) {
+				String got = bar(image);
+				check(name + ", the armour bar: " + got, got.equals(expectedBar(armourPoints, blue)));
+			}
+		});
+	}
+
+	private void hudPictures() {
+		then(() -> {
+			mc.setScreen(null);
+			mc.player.inventory.selectedSlot = 0;
+			mc.player.pitch = 45.0F;
+		});
+		scene("kit", "gold", 1);
+		scene("health", 20);
+		int weak = Alchemy.WARD[0];
+		hud("ward-fresh", "none", 0, weak, weak, 0, 0);
+		hud("ward-half-worn", "none", 0, weak / 2, weak, 0, 0);
+		hud("ward-with-a-helmet", "helmet", 3, weak / 3, weak, 0, 0);
+		hud("ward-fresh-over-a-chestplate", "chest", 8, Alchemy.WARD[1], Alchemy.WARD[1], 0, 0);
+		hud("ward-worn-over-a-chestplate", "chest", 8, weak / 2, weak, 0, 0);
+		hud("ward-over-whole-iron", "set", 20, weak / 4, weak, 0, 0);
+		hud("whole-iron-alone", "set", 20, 0, 0, 0, 0);
+		hud("timers-running", "chest", 8, weak / 2, weak, 2, 6);
+		then(() -> mc.options.guiScale = 3);
+		wait(2);
+		hud("ward-worn-over-a-chestplate-larger", "chest", 8, weak / 2, weak, 0, 0);
+		then(() -> mc.options.guiScale = 0);
+		scene("effects", "none", 0, 0, 0, 0);
+		then(() -> mc.player.pitch = 0.0F);
+	}
+
+	/** Y haste's lemon, L the feather's lavender, . the panel. */
+	private static char liquid(int rgb) {
+		int r = rgb >> 16 & 255, g = rgb >> 8 & 255, b = rgb & 255;
+		if (r > 0xb0 && g > 0xb0 && b < 0x60) return 'Y';
+		if (b > 0xc0 && r > 0x80 && b > g + 0x20) return 'L';
+		if (r > 0xb0 && Math.abs(r - g) < 8 && Math.abs(g - b) < 8) return '.';
+		return '?';
+	}
+
+	/** The first three places in the inventory's row of bottles, read low in each bottle, where liquid stays to the last. */
+	private String bottles(BufferedImage image, int count) {
+		ScreenScaler screen = new ScreenScaler(mc.options, mc.displayWidth, mc.displayHeight);
+		int left = (screen.getScaledWidth() - 176) / 2, top = (screen.getScaledHeight() - 166) / 2;
+		int spacing = Bottles.spacing(Math.max(1, count));
+		StringBuilder read = new StringBuilder();
+		for (int i = 0; i < 3; i++) read.append(liquid(pixel(image, screen, left + Bottles.FIRST_X + i * spacing + 7, top + Bottles.Y + 13)));
+		return read.toString();
+	}
+
+	/** The inventory with haste and the feather at so many rows of liquid, in that order of drinking. */
+	private void inventory(String name, int haste, int feather, int hasteOrder, int featherOrder, String expected) {
+		scene("effects", "none", 0, 0, haste, feather, hasteOrder, featherOrder);
+		await("the client hears it", LIMIT, () -> Alchemy.hasted.shown.get(mc.player) == haste && Alchemy.feathered.shown.get(mc.player) == feather
+				&& Alchemy.hasted.order.get(mc.player) == (haste > 0 ? hasteOrder : 0) && Alchemy.feathered.order.get(mc.player) == (feather > 0 ? featherOrder : 0));
+		then(() -> mc.setScreen(new InventoryScreen(mc.player)));
+		wait(3);
+		picture(name);
+		then(() -> {
+			BufferedImage image = shot(name);
+			if (!check(name + ": the picture reads", image != null)) return;
+			String got = bottles(image, (haste > 0 ? 1 : 0) + (feather > 0 ? 1 : 0));
+			check(name + ", the bottles: " + got, got.equals(expected));
+			mc.setScreen(null);
+		});
+	}
+
+	private void inventoryPictures() {
+		then(() -> {
+			mc.setScreen(null);
+			mc.player.pitch = 0.0F;
+		});
+		scene("kit", "gold", 1);
+		inventory("inventory-none-running", 0, 0, 0, 0, "...");
+		inventory("inventory-haste", 4, 0, 1, 0, "Y..");
+		inventory("inventory-feather-then-haste", 3, 6, 2, 1, "LY.");
+		inventory("inventory-haste-low", 1, 0, 1, 0, "Y..");
+		scene("effects", "none", 0, 0, 0, 0);
 	}
 
 	private void pictures() {
@@ -261,11 +482,6 @@ public final class AlchemyClientTest extends ClientTest {
 		wait(5);
 		picture("inventory");
 		then(() -> mc.setScreen(null));
-		for (int slot : new int[] {3, 4, 5, 6}) {
-			then(() -> mc.player.inventory.selectedSlot = slot);
-			wait(20);
-			picture("hand-" + slot);
-		}
 		then(() -> mc.player.inventory.selectedSlot = 0);
 	}
 
@@ -278,6 +494,8 @@ public final class AlchemyClientTest extends ClientTest {
 		glass = WaterBottles.glassBottle.get();
 		if (restarted()) {
 			then(() -> check("the client has them back", count(weak) == 1 && count(plain) == 1 && count(strong) == 1 && count(rose) == 5));
+			if (AlchemyTest.aloneInRun()) until("and hears the blue and the haste again", LIMIT, () -> Ward.wear.get(mc.player) == 30 && Ward.whole.get(mc.player) == 40 && Alchemy.hasted.running(mc.player));
+			scene("effects", "none", 0, 0, 0, 0);
 			// Peaceful heals a point every 20 ticks (beta's `age % 20 * 12`): in the very tick of the wound, the client would hear of 5 and never of 4.
 			scene("no peaceful");
 			scene("health", 4);
@@ -297,21 +515,33 @@ public final class AlchemyClientTest extends ClientTest {
 			z = MathHelper.floor(mc.player.z);
 			mc.setScreen(null);
 			TranslationStorage names = TranslationStorage.getInstance();
-			check("the names", names.get(rose.getTranslationKey() + ".name").equals("Golden Rose") && names.get(weak.getTranslationKey() + ".name").equals("Weak Health Potion")
-					&& names.get(plain.getTranslationKey() + ".name").equals("Health Potion") && names.get(strong.getTranslationKey() + ".name").equals("Strong Health Potion"));
+			String[] expected = {"Golden Rose", "Golden Dandelion", "Golden Bluebell", "Golden Feather"};
+			Item[] golden = {rose, Alchemy.goldenDandelion.get(), Alchemy.goldenBluebell.get(), Alchemy.goldenFeather.get()};
+			boolean right = names.get(weak.getTranslationKey() + ".name").equals("Weak Health Potion") && names.get(strong.getTranslationKey() + ".name").equals("Strong Health Potion")
+					&& names.get(Alchemy.ward.get(1).get().getTranslationKey() + ".name").equals("Ward Potion") && names.get(Alchemy.feather.get(0).get().getTranslationKey() + ".name").equals("Weak Feather Potion")
+					&& names.get(Alchemy.haste.get(2).get().getTranslationKey() + ".name").equals("Strong Haste Potion");
+			for (int i = 0; i < golden.length; i++) right &= names.get(golden[i].getTranslationKey() + ".name").equals(expected[i]);
+			check("the names", right);
 			if (!remote()) gilding();
 		});
 		scene("no peaceful");
 		atBench();
 		inInventory();
-		drinks("weak", weak, 12);
+		drinks("weak", weak, 10);
 		drinks("plain", plain, 16);
 		drinks("strong", strong, 20);
 		notDrunk();
 		fromStack();
 		if (remote()) disagrees();
+		effectsHeard();
+		if (remote()) hasteOnClient();
+		falls(false, 5, 6);
+		falls(true, 2, 2);
+		scene("feather", "off");
 		if (FabricLoader.getInstance().isModLoaded("hearty-food")) ghostHearts();
 		scene("peaceful again");
+		hudPictures();
+		inventoryPictures();
 		pictures();
 		scene("leave");
 	}

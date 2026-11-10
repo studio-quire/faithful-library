@@ -31,17 +31,34 @@ Windows now.
 - **Hearty Food**: food heals half as much again, at half a heart a second instead of at once, and pale hearts show where
   you'll end up. Eating is one click as ever. More food adds to what's coming, a hit doesn't cancel it,
   and it helps even mid-fight. A golden apple still heals everything at once. Food past a full bar is wasted, as in beta.
-- **Alchemy**: gild a rose, then brew it. Four gold ingots around a rose at the bench make a Golden Rose. A water bottle
-  with one, two or three of them makes a Weak Health Potion, a Health Potion or a Strong Health Potion, in the
-  inventory's grid too. Drinking heals 4, 6 or 8 hearts at once and leaves the bottle; at full health it isn't drunk. It
-  needs Water Bottles, which comes on with it.
-- **Blue Flowers**: a blue flower in patches across Taiga and Tundra, as dandelions grow in warmer land. New chunks only.
-  It's placed and picked like the rose and dandelion, and makes two light blue dye. Bonemeal on grass in those biomes can
-  grow one too.
+- **Alchemy**: gild a flower or a feather, then brew it. Four gold ingots around a rose, a dandelion, a bluebell or a
+  feather at the bench make a Golden Rose, Golden Dandelion, Golden Bluebell or Golden Feather. A water bottle with one,
+  two or three of the same golden thing makes a weak, plain or strong potion of its kind, in the inventory's grid too, and
+  drinking one leaves the bottle. Health Potions (roses) heal 3, 6 or 10 hearts at once. A Ward Potion (bluebells) is a
+  set of armour in a bottle: it turns the whole armour bar blue, over whatever armour you wear, and protects as a full
+  set does. Hits wear it away as they wear a set, the blue draining from the bar, and your own armour takes no wear
+  until the blue is gone, then shows again as it was. The bigger the potion, the tougher the set: a weak one lasts about
+  three zombie hits, a plain one five and a strong one nine. Another over a worn one adds what was left to it, up to a
+  strong one's, and a golden apple gives a strong one's ward as well as its full heal. Haste Potions (dandelions) make
+  you walk and mine 20% faster, and Feather Potions (feathers) make a fall hurt a third as much, for 4, 8 or 12
+  minutes; another adds its time, up to 12 minutes. While one runs, its bottle stands beside your figure in the
+  inventory, draining as the time goes, in the order you drank them. A potion isn't drunk when there's no room for any
+  of it. Bluebells
+  come from Blue Flowers: without it there are no Ward Potions. Alchemy needs Water Bottles, which comes on with it.
+- **Blue Flowers**: bluebells in patches across Taiga and Tundra, as dandelions grow in warmer land. New chunks only.
+  A bluebell is placed and picked like the rose and dandelion, and makes two light blue dye. Bonemeal on grass in those
+  biomes can grow one too. It also calls beta's yellow flower Dandelion, where beta said Flower; its page in the
+  settings has a switch to keep Flower.
 - **Wild Saplings**: saplings grow every tree that grows wild, so a forest you cut down can be planted again. A spruce
   sapling grows a tall, thin pine one time in three, as a third of Taiga's trees are. An oak sapling grows a big oak as
   often as the wild oaks where it's planted are big: one time in three in Forest and Rainforest, one in ten elsewhere,
   as in beta. And its big oaks are as full as wild ones, where beta's had smaller clumps of leaves.
+- **Explosive Arrows**: an arrow and two gunpowder make an Explosive Arrow, in the inventory's grid too. It bursts where it
+  lands, on a block or a mob, with a small blast of beta's own, half a creeper's in size: a direct hit takes over half a
+  zombie's health, and things a block or two off lose a couple of hearts. It breaks no blocks, but TNT it reaches goes
+  off, and it hurts you too if you fire too close. Its puffs show as far off as you can hear the bang, where beta draws a
+  blast's only within 16 blocks of you. A bow shoots whichever arrows come first in your inventory, the hotbar from the
+  left first, so where you keep them decides. Dispensers shoot them too.
 - **Item Repair**: two worn tools, weapons or pieces of armour of the same kind in the crafting grid make one, with what
   was left of both, up to as good as new, as in later versions. Shears, fishing rods and flint and steel too. A
   world rule, Repair Bonus, adds a twentieth of a new one's durability on top, as later versions did; it's off to start
@@ -80,7 +97,7 @@ them, as anyone's own setup can (below).
 
 `OldFaithful-Library-server-<version>.zip` and `StillFaithful-Library-server-<version>.zip` are that edition's server
 package with the library's server-side mods on in `mods/`, as in the packs. So as they come they refuse a player without
-Water Bottles, Alchemy, Blue Flowers and Buried Towers. Move out of `mods/` the jars you don't want, before the first start; `faithful-core` and
+Water Bottles, Alchemy, Blue Flowers, Explosive Arrows and Buried Towers. Move out of `mods/` the jars you don't want, before the first start; `faithful-core` and
 `oldfaithful-settings` stay while any library mod does. With them all out it's the plain edition's server. The README inside
 says more.
 
@@ -92,7 +109,7 @@ says more.
   server without it, nothing is mended.
 - **Wild Saplings** runs where the world runs too, so a server can use it with any client, vanilla beta 1.7.3 too. With it
   on a server without it, saplings grow as in beta.
-- **Water Bottles**, **Alchemy**, **Blue Flowers** and **Buried Towers** need every player to have them: the first three add blocks or items, and Buried Towers builds on the library's world generation, which needs it too. A server running one
+- **Water Bottles**, **Alchemy**, **Blue Flowers**, **Explosive Arrows** and **Buried Towers** need every player to have them: the first four add blocks or items, and Buried Towers builds on the library's world generation, which needs it too. A server running one
   refuses anyone without it, vanilla clients included, with a message saying so. A player on a library pack with any mod
   on is offered **Match This Server's Mods**, which turns on what that server needs for their next launch. A client with
   them can join a server without them, where they can't be made and no towers are built.
@@ -115,8 +132,13 @@ original game too. What you lose, plainly:
 - **Buried Towers**: towers it's built stay, as ordinary blocks, and new chunks go back to beta's own dungeons. A tower half
   made stays half made. Rooms the old Better Dungeons built stay too.
 - **Water Bottles**: its items don't survive. Bottles in that world become bowls for good. Alchemy goes off with it, as it needs it.
-- **Alchemy**: its items don't survive. Golden roses in that world become roses and potions become bowls, for good.
-- **Blue Flowers**: its flowers don't survive. Growing or carried, in that world they become roses, for good.
+- **Alchemy**: its items don't survive. Golden roses and bluebells in that world become roses, golden dandelions
+  dandelions, golden feathers feathers and potions bowls, for good. A ward and potions still running wait in the
+  player's save and go on if the mod returns.
+- **Blue Flowers**: its bluebells don't survive. Growing or carried, in that world they become roses, for good. The
+  yellow flower is called Flower again.
+- **Explosive Arrows**: its arrows don't survive. Carried, in that world they become plain arrows, for good, and any in
+  flight are gone.
 - **Hearty Food**: food goes back to beta's. Healing still to come waits in the player's save and goes on if the mod returns.
 - **Item Repair**: nothing. What it mended stays mended, and Repair Bonus, if you turned it on, stays in the world's file.
 - **Wild Saplings**: nothing. Trees it grew stay, and saplings grow as in beta again.
@@ -155,7 +177,9 @@ contains into `local/release/faithful-library-<version>/`; [docs/building.md](do
 
 ## Credits and licence
 
-Made by Claude Opus 5.5, an AI model by Anthropic, at Studio Quire. Idea, direction and play-testing: Shoalstone.
+Made by Claude Opus 5.5, an AI model by Anthropic, at Studio Quire. Claude Fable 5.2 designed Explosive Arrows and
+Alchemy's Ward, Haste and Feather Potions, and drew the arrow's head and the golden flowers and feather. Idea,
+direction and play-testing: Shoalstone.
 
 The library's code is under the [MIT licence](LICENSE). The packs build on Fabric Loader, Mixin, ASM, Babric's mappings,
 LWJGL, SDL and OpenAL Soft, each under its own licence; the downloads carry their notices and licence texts, and the

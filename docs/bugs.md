@@ -120,6 +120,7 @@ Key:
 | 79 | Multiplayer: an item used just after closing a chest, furnace or workbench (a block placed within about a round trip) comes back on the player's screen, one more than they have, until the slot next changes | bug | OF | low-mid (MP) | fixed (OF) |
 | 80 | A dark hairline down the seam between two blocks side by side, seen with the camera almost in line with the seam (half a block off it, 4 away, looking down a little): chests and planks alike | ? | ? | low | seen in pictures, not looked into |
 | 81 | A mob that has died stays solid while it falls over: it pushes you and other mobs and is pushed, and arrows bounce off it though nothing can hurt it | bug | OF | low | fixed (OF) |
+| 82 | An arrow that starts a tick exactly on the face it's about to strike is put at NaN: beta divides by how far it moved, which is none | bug | ? | ? | seen in Explosive Arrows, not looked into for plain arrows |
 
 #32 (video settings sliders can't be dragged) left the table: vanilla has no slider there (its entry).
 
@@ -689,8 +690,19 @@ spawn area alone leaves tens of thousands of liquid ticks at its edge, which ret
 everything else). Ticks still run only with their surroundings loaded, so they never load chunks. Checked on the real
 server (`:oldfaithful-fixes:serverTicksTest`): a repeater clock built and running, the server stopped and started, the
 clock runs on; the same world on a vanilla server loads cleanly and its clock stands still. Noticed on the way: a new
-world's generation leaves some 240,000 liquid ticks, worked through at 1,000 a tick (about four minutes); vanilla
+world's generation leaves some 240,000 liquid ticks, worked through at 1,000 a tick (about 250 ticks, 13 s, as
+`serverTicksTest`'s wait showed 2026-11-09; this said four minutes before); vanilla
 dropped what was left on quitting, now it's saved and finished next time.
+A save or an unload takes each chunk's ticks from the queue grouped by chunk (2026-11-09, Claude Fable 5.2): one pass
+over the queue, kept until the queue changes, which the world's set of pending ticks reports by counting its changes
+(`PendingTicks.Counted`, wrapped round whatever set the world has). Up to 0.2.3 the whole queue was read for every chunk
+saved or unloaded, so a save cost chunks times ticks queued: about 17 ms a chunk on a queue of 940,000, which 2,304
+chunks made with nobody near leave. Measured on the real server on that land (`serverTicksTest -Pticks.square=48
+-Pfixes.seed=1733`, other sessions' tests and the user's game running): the save of 2,881 chunks 43.5 s with 0.2.3's
+jar, 4.1 s now; 48 chunks unloaded 1.2 s, now 0.04 s. What's written and what comes back is the same, tick for tick:
+`everyTickSavedAndRestored` (`docs/fixes.md` > Tests) passes on 0.2.3's jar and on this one. One grouping costs about
+three whole-queue reads (13 ms at 240,000 ticks), so a save of one or two chunks on a long queue is a little slower
+than it was, and everything larger faster.
 
 ### 43. A missing block entity crashes the game when its block is broken (T, Pure)
 Fixed (2026-11-02, after 0.1.0) in `oldfaithful-saves`: every loaded chunk's vanilla blocks with a block entity that
@@ -1107,6 +1119,14 @@ little could rely on it (a crowd at a trap shoved for a second, arrows soaked up
 **Fixed in Old Faithful** (2026-11-08, `mobs.dyingBodies`): `docs/fixes.md`. Checked by `FixesCheck` (a dying pig not
 pushable, pushing nothing, an arrow through it); with the fix off, both as beta (Still Faithful's all-off run, when it
 was polish, 2026-11-08: pushable, pushed, the arrow bounced back).
+
+### 82. An arrow starting a tick on the face it strikes goes to NaN (seen, not looked into for plain arrows)
+Found by Explosive Arrows' self-test (2026-11-09, commit 20e8813): an arrow whose tick starts exactly on the face it
+strikes has moved nothing that tick, and beta's `ArrowEntity.tick` divides by that distance as it backs the arrow off
+the face, so its position becomes NaN. An explosive arrow's burst there disconnected a client on a server; that mod now
+bursts where the tick began and a client ignores a burst it can't draw. Plain arrows still do it: what a NaN arrow does
+afterwards (on a client, on a server, in a save) isn't looked into. Not for the 0.3.0 library release. ? (low, by how
+exact the start must be).
 
 ### 74. A step-up under a low roof sinks into the floor (T, seen)
 Asked about by the user (2026-11-06), who remembered being moved slightly into a block and pushed out on a simple

@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 /**
- * Steps run in order, ticks apart: what a test on a running game is. {@code script()} runs first, at once: plain code in it happens then, and what has to wait for the game goes in steps.
+ * Steps run in order: what a test on a running game is. They run back to back in one tick until one holds (a {@code wait}, or an {@code until} or {@code await} whose condition
+ * isn't met yet), so the game moves on between two steps only where one of those stands between them. {@code script()} runs first, at once: plain code in it happens then, and what has to wait for the game goes in steps.
  * A step that adds steps has them run next. A step that throws fails and ends the script, since what comes after would stand on it.
  */
 public abstract class Script {

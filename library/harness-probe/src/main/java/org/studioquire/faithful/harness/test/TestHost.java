@@ -164,6 +164,8 @@ public final class TestHost {
 		}
 		player.health = 20;
 		player.fireTicks = 0;
+		// A client picks its own slot and says so, which its ClientTests does too; a server has no word for it in beta.
+		player.inventory.selectedSlot = 0;
 		plotX = x + 0.5;
 		plotY = y + 0.01;
 		plotZ = z + 0.5;
@@ -209,6 +211,9 @@ public final class TestHost {
 		else player.setPosition(x, y + player.standingEyeHeight, z);
 		player.velocityX = player.velocityY = player.velocityZ = 0;
 		((EntityAccessor) player).fallDistance(0);
+		// Beta files an entity under its chunk in the entity's own update, and finds things near a place by chunk (a blast's reach, a pickup), while a test's
+		// first steps run in this very tick: without this, a blast on the plot misses the player, still filed where the last test left them.
+		player.world.updateEntity(player, false);
 	}
 
 	private static void tick() {

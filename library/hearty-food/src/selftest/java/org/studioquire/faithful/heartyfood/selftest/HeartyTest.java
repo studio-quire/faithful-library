@@ -1,5 +1,8 @@
 package org.studioquire.faithful.heartyfood.selftest;
 
+import java.lang.reflect.Method;
+
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -16,6 +19,8 @@ public final class HeartyTest extends WorldTest {
 	private static final int TIMED = 1;
 
 	private int peacefulBefore;
+	/** Alchemy's ward taken off: its golden apple gives one as well as the heal, and the hits here are on a player with nothing to protect them. By reflection, as this mod doesn't depend on that one. */
+	private Method clearAlchemyWard;
 
 	/**
 	 * One player goes through every mod's test, and the harness fills their bar as each begins, on both sides of the restart. A full bar ends what's pending on the next tick, as it should. So what's
@@ -38,6 +43,13 @@ public final class HeartyTest extends WorldTest {
 		HeartyFood.endsAt.set(p, null);
 		p.health = health;
 		p.hearts = 0;
+		if (clearAlchemyWard != null) {
+			try {
+				clearAlchemyWard.invoke(null, p);
+			} catch (ReflectiveOperationException e) {
+				check("Alchemy's ward comes off: " + e, false);
+			}
+		}
 	}
 
 	private void eat(Item item) {
@@ -265,6 +277,13 @@ public final class HeartyTest extends WorldTest {
 
 	@Override
 	protected void script() {
+		if (FabricLoader.getInstance().isModLoaded("alchemy")) {
+			try {
+				clearAlchemyWard = Class.forName("org.studioquire.faithful.alchemy.Ward").getMethod("clear", PlayerEntity.class);
+			} catch (ReflectiveOperationException e) {
+				check("Alchemy has what this test reads: " + e, false);
+			}
+		}
 		scenes();
 		difficultyForTiming();
 		if (restarted()) {

@@ -1737,11 +1737,11 @@ final class Floors {
 			f.chestAt(mid, f.y + 1, 0, NORTH, "vault-best");
 			int[][] spots = {{-room, 1}, {-room, -1}, {1, room}};
 			for (int i = 0; i < spots.length; i++) f.chestAt(mid + spots[i][0], f.y, spots[i][1], spots[i][0] == -room ? WEST : SOUTH, "vault");
-			// The guards: creepers in the hall, standing past the moat, to either side of the way to the bridge, and worse behind the door.
+			// The guards: creepers in the hall, standing past the moat, to either side of the way to the bridge, and zombies behind the door (the user's call, 2026-11-09).
 			int s = r.nextBoolean() ? 1 : -1, front = mid + room + 5;
 			f.spawnerAt(front, f.y, s * (2 + r.nextInt(3)), "Creeper");
 			f.spawnerAt(front + 1 + r.nextInt(Math.max(1, half - front - 1)), f.y, -s * (2 + r.nextInt(3)), f.t.monster(r, 1));
-			f.spawnerAt(mid - room, f.y, 0, "Skeleton");
+			f.spawnerAt(mid - room, f.y, 0, "Zombie");
 			f.cobwebCorners(10);
 		}
 	}

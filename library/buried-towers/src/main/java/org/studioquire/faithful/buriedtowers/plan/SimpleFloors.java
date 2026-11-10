@@ -908,7 +908,7 @@ final class SimpleFloors {
 			strongbox(f, wall - 1, 1, "vault");
 			int gx = f.frame.x(wall - 3, 0), gz = f.frame.z(wall - 3, 0);
 			f.p.force(gx, f.y, gz, cell(SPAWNER, 0));
-			f.p.fixture(gx, f.y, gz, "spawner:Skeleton");
+			f.p.fixture(gx, f.y, gz, "spawner:Zombie");
 			f.t.spawners++;
 			// The ditch, two deep, with a block left across it to the door and what's fallen in at its foot.
 			for (int u = wall + 2; u < wall + 2 + ditch; u++) {

@@ -4,6 +4,32 @@ The Faithful Library's releases, newest first. One version number for Faithful C
 packs and server packages. Each names the edition releases its packs are built on, whose mods and LWJGL are inside as
 those releases have them, and Faithful Settings is Old Faithful's. Entries say what a player or server owner notices.
 
+## 0.3.0 (2026-11-09)
+
+Library packs for Old Faithful 0.2.4 and Still Faithful 0.5.1, on Pure Faithful 0.1.5. From Old Faithful 0.2.4 (in
+both packs): saving is faster in a world with many blocks waiting to update. Their changelogs have the detail. One new
+mod, on in the packs and server packages, and more in three others:
+
+- **Blue Flowers**: its flower is called Bluebell, and beta's yellow flower Dandelion where beta said Flower. A switch on
+  Blue Flowers' page in the settings keeps Flower. Only the names you see change: worlds and servers are as they were.
+- **Explosive Arrows**, a new mod: an arrow and two gunpowder make an Explosive Arrow, which bursts where it lands, on a
+  block or a mob, with a small blast of beta's own, half a creeper's in size. A direct hit takes over half a zombie's
+  health, and things a block or two off lose a couple of hearts. It breaks no blocks, but TNT it reaches goes off, and it
+  hurts you too if you fire too close. Its puffs show as far off as you can hear the bang, where beta draws a blast's
+  puffs only within 16 blocks of you; other blasts stay as beta draws them. A bow shoots whichever arrows come first in
+  your inventory, the hotbar from the left first, so where you keep them decides; dispensers shoot them too. Every player
+  on a server needs it, as with Water Bottles.
+- **Alchemy** brews three more kinds of potion, each in three sizes as health has, from three more golden things made
+  as the Golden Rose is: a Golden Dandelion, a Golden Bluebell (from Blue Flowers' bluebell) and a Golden Feather.
+  **Ward** is a set of armour in a bottle: it turns the whole armour bar blue over whatever you wear, and hits wear it
+  away, the blue draining, before your own armour takes any wear; the bigger the potion, the longer it lasts. **Haste**
+  makes you walk and mine 20% faster, and **Feather** makes a fall hurt a third as much, for 4, 8 or 12 minutes,
+  their bottles draining beside your figure in the inventory while they run. A
+  golden apple now gives a strong Ward Potion's ward as well as its full heal. **Health potions now heal 3, 6 or 10
+  hearts**, where they healed 4, 6 or 8. The Golden Rose is redrawn to match the new golden things.
+- **Buried Towers**: the spawner guarding the vault at the bottom of a tower makes zombies, where it made skeletons, in
+  towers made from now on. Towers already in your worlds keep theirs.
+
 ## 0.2.4 (2026-11-09)
 
 Library packs for Old Faithful 0.2.3 and Still Faithful 0.5.0, on Pure Faithful 0.1.5. The packs now carry those

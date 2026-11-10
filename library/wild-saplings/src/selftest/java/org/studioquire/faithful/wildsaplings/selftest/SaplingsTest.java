@@ -24,10 +24,23 @@ public final class SaplingsTest extends WorldTest {
 	private int tx, ty, tz;
 	private int[] ids, metas;
 
+	/**
+	 * The box emptied first, all but its floor, and any leaves or logs in that too: on the plot it reaches past the plot's cleared 8 cells, where the world's
+	 * own trees can stand, and beta's leaves and logs mark the leaves near them for decay as they're taken out, notified or not, so putting a tree's cells
+	 * back would leave neighbouring leaves changed, read as part of the next tree.
+	 */
 	private void site(int sx, int sy, int sz) {
 		tx = sx;
 		ty = sy;
 		tz = sz;
+		for (int dx = -REACH; dx <= REACH; dx++) {
+			for (int dz = -REACH; dz <= REACH; dz++) {
+				for (int dy = -1; dy <= TOP; dy++) {
+					int id = world.getBlockId(tx + dx, ty + dy, tz + dz);
+					if (id != 0 && (dy >= 0 || id == Block.LEAVES.id || id == Block.LOG.id)) world.setBlockWithoutNotifyingNeighbors(tx + dx, ty + dy, tz + dz, 0);
+				}
+			}
+		}
 		int n = (2 * REACH + 1) * (2 * REACH + 1) * (TOP + 2);
 		ids = new int[n];
 		metas = new int[n];

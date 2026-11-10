@@ -117,6 +117,8 @@ public final class ClientTests {
 		ticks = 0;
 		asked = TestHost.answers + 1;
 		inWorld = true;
+		// The hotbar's first slot, as the world's side sets it: a server can't tell a client which slot it holds, and the last mod's test may have picked another.
+		mc.player.inventory.selectedSlot = 0;
 		TestHost.channel.toServer(out -> {
 			out.writeByte(TestHost.OP_RUN);
 			out.writeUTF(name);
