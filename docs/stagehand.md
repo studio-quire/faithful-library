@@ -27,7 +27,7 @@ A text file, UTF-8, a command a line, `#` starting a comment line. Numbers are t
 | `tp <x> <z>` | The same, to the top of that column. |
 | `tp <kind> [words] [key=value...]` | To a named place: `tp spawn`, `tp player Alice`, `tp tower nearest floor=3` with Buried Towers there (floors count from the top, 0 being the top one; no floor is just outside the gate; the result says the floor's kind and its `way` down). |
 | `locate <kind> [words] [key=value...]` | Where that is, and how far. |
-| `give <item>[@damage] [count] [wear]` | Into the inventory; `wear` puts armour on. Beta's by name, `iron_sword`, `wool@14`; a mod's whole, `water-bottles:water_bottle`. |
+| `give <item>[@damage] [count] [wear]` | Into the inventory; `wear` puts armour on. Beta's by name, `iron_sword`, `wool@14`; a mod's whole, `water-bottles:water_bottle`. `redstone_torch` is the one a player crafts (beta's lit block); `unlit_redstone_torch` is beta's dark one, which stays dark where it's placed until something beside it changes. |
 | `kit <name>` | `wood`, `stone`, `iron`, `diamond`, `builder`; `list kits` says what's in them. |
 | `heal [n]` / `health <n>` | Half-hearts, and the first also puts out fire and fills the air. |
 | `clear [all\|items\|armor]` | The inventory. |

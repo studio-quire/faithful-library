@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -17,8 +18,13 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.Monster;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.passive.PigEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ArrowEntity;
+import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.recipe.CraftingRecipeManager;
+import net.minecraft.screen.ScreenHandler;
 import org.studioquire.faithful.harness.test.WorldTest;
 import org.studioquire.faithful.worldrules.WorldRules;
 import org.studioquire.oldfaithful.core.api.Days;
@@ -26,7 +32,7 @@ import org.studioquire.oldfaithful.core.api.Rule;
 import org.studioquire.oldfaithful.core.impl.Rules;
 
 /**
- * Day length, weather, natural monsters and apples where the world runs. It leaves a double day and rain for the restart to find; the client's half is {@code RulesClientTest}.
+ * Day length, weather, natural monsters, apples and bows where the world runs. It leaves a double day and rain for the restart to find; the client's half is {@code RulesClientTest}.
  * After the restart it locks the rules and checks they hold, then unlocks them as a player would, by the line in the world's file, read again as a world opening reads it, so
  * the world is as it was for any test after this one.
  */
@@ -288,6 +294,123 @@ public final class RulesTest extends WorldTest {
 		});
 	}
 
+	private int count(Item item) {
+		int n = 0;
+		for (ItemStack s : player.inventory.main) {
+			if (s != null && s.itemId == item.id) n += s.count;
+		}
+		return n;
+	}
+
+	/** Arrows in flight or lying about, gone, so none is picked up later, here or on another test's plot. */
+	@SuppressWarnings("unchecked")
+	private int clearArrows() {
+		int n = 0;
+		for (Entity e : (List<Entity>) world.entities) {
+			if (e instanceof ArrowEntity && !e.dead) {
+				e.markDead();
+				n++;
+			}
+		}
+		return n;
+	}
+
+	/** One shot through beta's own use, as a right click makes it, and its arrow taken away: whether one flew. */
+	private boolean shoot(ItemStack bow) {
+		clearArrows();
+		player.inventory.selectedSlot = 0;
+		bow.use(world, player);
+		return clearArrows() == 1;
+	}
+
+	private static ItemStack crafted(ItemStack... cells) {
+		CraftingInventory grid = new CraftingInventory(new ScreenHandler() {
+			@Override
+			public boolean canUse(PlayerEntity player) {
+				return true;
+			}
+		}, 3, 3);
+		for (int i = 0; i < cells.length; i++) grid.setStack(i, cells[i]);
+		return CraftingRecipeManager.getInstance().craft(grid);
+	}
+
+	private static ItemStack dispenserFrom(ItemStack bow) {
+		Block c = Block.COBBLESTONE;
+		return crafted(new ItemStack(c), new ItemStack(c), new ItemStack(c), new ItemStack(c), bow, new ItemStack(c), new ItemStack(c), new ItemStack(Item.REDSTONE), new ItemStack(c));
+	}
+
+	private static String said(ItemStack stack) {
+		return stack == null ? "nothing" : stack.count + " of " + stack.getItem().getTranslationKey() + " at " + stack.getDamage();
+	}
+
+	/** Bows Wear Out where the world runs: a bow's most damage following the rule, the wear a shot makes, the last shot, and what makes things of bows. */
+	private void bows() {
+		then(() -> {
+			Arrays.fill(player.inventory.main, null);
+			player.inventory.main[1] = new ItemStack(Item.ARROW, 64);
+			ItemStack bow = new ItemStack(Item.BOW), kept = new ItemStack(Item.BOW, 1, 100);
+			check("bows off, as beta: a bow has no most damage, so nothing to wear or show", !WorldRules.bowsWearOut.get() && Item.BOW.getMaxDamage() == 0 && !bow.isDamageable());
+			check("bows off: a shot takes an arrow and leaves the bow new", shoot(bow) && count(Item.ARROW) == 63 && bow.getDamage() == 0);
+			check("bows off: one worn while they were on keeps its wear, unshown, and wears no more", shoot(kept) && kept.getDamage() == 100 && !kept.isDamaged());
+			check("bows off: a worn one still makes a dispenser: " + said(dispenserFrom(kept)), is(dispenserFrom(kept), Block.DISPENSER.id));
+			Rules.change(WorldRules.bowsWearOut, "true");
+			check("bows on: later versions' most damage, so the worn one shows its wear again", Item.BOW.getMaxDamage() == WorldRules.BOW_MOST_DAMAGE && kept.isDamaged());
+			boolean shot = shoot(bow);
+			check("bows on: a shot wears it by one: " + said(bow), shot && bow.getDamage() == 1 && count(Item.ARROW) == 61);
+			player.inventory.main[1] = null;
+			check("bows on: with no arrow, no shot and no wear", !shoot(bow) && bow.getDamage() == 1);
+			player.inventory.main[1] = new ItemStack(Item.ARROW, 64);
+			ItemStack last = new ItemStack(Item.BOW, 1, WorldRules.BOW_MOST_DAMAGE);
+			shot = shoot(last);
+			check("bows on: the 385th shot still flies, and uses the bow up, as a fishing rod's last cast is: " + said(last), shot && last.count == 0);
+			Item explosive = FabricLoader.getInstance().isModLoaded("explosive-arrows") ? org.studioquire.oldfaithful.core.api.Names.item("explosive-arrows:explosive_arrow") : null;
+			if (explosive != null) {
+				player.inventory.main[1] = new ItemStack(explosive, 1);
+				player.inventory.main[2] = new ItemStack(Item.ARROW, 64);
+				shot = shoot(bow);
+				check("bows on: an explosive arrow wears it as a plain one does: " + said(bow), shot && count(explosive) == 0 && count(Item.ARROW) == 64 && bow.getDamage() == 2);
+			}
+			check("bows on: a worn bow makes a dispenser, and so does a new one", is(dispenserFrom(new ItemStack(Item.BOW, 1, 300)), Block.DISPENSER.id) && is(dispenserFrom(new ItemStack(Item.BOW)), Block.DISPENSER.id));
+			boolean repair = FabricLoader.getInstance().isModLoaded("item-repair");
+			if (repair) {
+				ItemStack mended = crafted(new ItemStack(Item.BOW, 1, 100), new ItemStack(Item.BOW, 1, 300));
+				check("bows on: Item Repair makes one of two worn bows, 285 and 85 shots left coming to 370: " + said(mended), mended != null && mended.itemId == Item.BOW.id && mended.getDamage() == 15);
+			}
+			Rules.change(WorldRules.bowsWearOut, "false");
+			if (repair) check("bows off: nor does it mend them", crafted(new ItemStack(Item.BOW, 1, 100), new ItemStack(Item.BOW, 1, 300)) == null);
+			Arrays.fill(player.inventory.main, null);
+			player.currentScreenHandler.sendContentUpdates();
+		});
+	}
+
+	private static boolean is(ItemStack stack, int id) {
+		return stack != null && stack.itemId == id && stack.count == 1;
+	}
+
+	/** For the client's half: a bow worn by the first number in the hotbar's first slot, eight arrows in the second. */
+	private void bowScenes() {
+		scene("bow kit", a -> {
+			clearArrows();
+			Arrays.fill(player.inventory.main, null);
+			player.inventory.main[0] = new ItemStack(Item.BOW, 1, Integer.parseInt(a[0]));
+			player.inventory.main[1] = new ItemStack(Item.ARROW, 8);
+			player.currentScreenHandler.sendContentUpdates();
+		});
+		// The bow where the world runs, at a wear or "none", and the arrows left; the client's shot cleared away.
+		scene("bow held", a -> {
+			ItemStack held = player.inventory.main[0];
+			boolean bow = a[0].equals("none") ? held == null : held != null && held.itemId == Item.BOW.id && held.getDamage() == Integer.parseInt(a[0]);
+			check("where the world runs, the bow " + (a[0].equals("none") ? "used up" : "at " + a[0]) + " and " + a[1] + " arrows: " + said(held) + ", " + count(Item.ARROW),
+					bow && count(Item.ARROW) == Integer.parseInt(a[1]));
+			clearArrows();
+		});
+		scene("bows clear", a -> {
+			clearArrows();
+			Arrays.fill(player.inventory.main, null);
+			player.currentScreenHandler.sendContentUpdates();
+		});
+	}
+
 	@Override
 	protected void script() {
 		scene("rule", args -> {
@@ -297,6 +420,7 @@ public final class RulesTest extends WorldTest {
 		});
 		scene("lock", args -> Rules.lock());
 		scene("unlock", args -> unlock());
+		bowScenes();
 		if (restarted()) {
 			check("the rules came back", WorldRules.dayLength.get().equals("double") && WorldRules.weather.get().equals("rain"));
 			check("the sun's clock came back: " + Days.time(world) + " at tick " + world.getTime(), Days.time(world) != world.getTime());
@@ -317,6 +441,7 @@ public final class RulesTest extends WorldTest {
 		// A long tick, and a server catches up on one with quick ticks of its own: this comes well before anything timed on the client.
 		apples();
 		fallingBonus();
+		bows();
 		monsterLight();
 		naturalSpawning();
 		then(() -> Rules.change(WorldRules.dayLength, "double"));

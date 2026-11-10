@@ -16,8 +16,9 @@ Windows now.
 - **World Rules**: rules for each world, on the mod's page in the settings and on Create World's World Rules... page:
   Mobs Break Blocks, Blasts Destroy Items, Keep Inventory, Sleeping, Day Length (normal, double, triple), Weather (normal, always clear, always
   rain or snow), Natural Monsters, Monster Light (monsters appear in dim light as in beta, or not in any torch or lava
-  light), Apple Drops (oak leaves, 1 time in 200) and Falling Hit Bonus (beta's, only when really falling, or none). A
-  world nobody changed plays as beta. **Lock Rules** locks a world's rules so nothing in the game changes them; on a
+  light), Apple Drops (oak leaves, 1 time in 200), Falling Hit Bonus (beta's, only when really falling, or none) and Bows
+  Wear Out (a bow lasts 385 shots, any arrow, as when bows first wore out in 1.0, with a bar showing its wear like a tool's; turned off,
+  worn bows look new and keep their wear for when it's back). A world nobody changed plays as beta. **Lock Rules** locks a world's rules so nothing in the game changes them; on a
   server, `/rule lock`. While they're locked, the Mods menu doesn't switch off a mod that has rules. Taking
   `rules-locked=true` out of the world's `faithful-world.properties`, with the game closed, unlocks them.
 - **Buried Towers**: ruined towers stand on the land about every 24 chunks, and go a long way down, to about bedrock:
@@ -59,8 +60,25 @@ Windows now.
   off, and it hurts you too if you fire too close. Its puffs show as far off as you can hear the bang, where beta draws a
   blast's only within 16 blocks of you. A bow shoots whichever arrows come first in your inventory, the hotbar from the
   left first, so where you keep them decides. Dispensers shoot them too.
+- **Wary Creepers**: creepers keep away from a jack-o'-lantern whose lit face they can see. A creeper within 8 blocks, on
+  the side the face looks out on and with nothing in the way, turns and walks off, and comes back once it no longer sees
+  a lit face in reach, so creepers keep to the edge of a lantern's reach. **A creeper coming from behind a lantern isn't
+  scared at all**, so mind which way each one faces: it faces you as you place it. A creeper sees it as it would see
+  you, so not through glass, leaves or a wall. One already at your side still swells. It's the lantern standing there
+  that keeps a place, not you: carrying or wearing a pumpkin does nothing.
+- **Wolf Packs**: your tamed wolves take on a different monster each. A fight starts when you hit something or
+  something hurts you, as in beta, or when a monster after you comes within 4 blocks of you or a skeleton shoots at you;
+  then each wolf goes for whichever monster after you or your wolves has the fewest wolves on it, what you hit first,
+  and when its own dies it takes the next, so a pack works through a group. A wolf that can't reach its monster gives up
+  on it after a while and comes back. Wolves fight creepers too, where beta's left them alone, and a bitten creeper
+  keeps coming for you, so keep your wolves between you and it.
+  Wolves eat fish as well as pork, raw or cooked, and each food heals a wolf what it heals you (beta's healed a
+  raw porkchop's worth, 1.5 hearts, whatever it was); with Hearty Food, as Hearty Food heals you, over time. A wolf at full health eats
+  nothing, as in beta, and a click with its food never sits it down or stands it up.
+  Each part is a world rule on its page.
 - **Item Repair**: two worn tools, weapons or pieces of armour of the same kind in the crafting grid make one, with what
-  was left of both, up to as good as new, as in later versions. Shears, fishing rods and flint and steel too. A
+  was left of both, up to as good as new, as in later versions. Shears, fishing rods and flint and steel too, and bows
+  in a world where World Rules' Bows Wear Out is on. A
   world rule, Repair Bonus, adds a twentieth of a new one's durability on top, as later versions did; it's off to start
   with, so mending only puts together what you had, and there's nothing to gain by saving worn things for it.
 - **Plain F3**: the F3 screen keeps its frame rate and memory and loses position, facing and entity counts, and mobs lose
@@ -102,13 +120,18 @@ Water Bottles, Alchemy, Blue Flowers, Explosive Arrows and Buried Towers. Move o
 says more.
 
 - **World Rules** runs where the world runs, so a server can use it with any client, vanilla beta 1.7.3 too. A server with
-  it is the same to a player who hasn't got it. `/rule <name> <value>` for ops and the console.
+  it is the same to a player who hasn't got it, except that under Bows Wear Out their bow wears out with no bar to show
+  it. `/rule <name> <value>` for ops and the console.
 - **Hearty Food** runs where the world runs too. On a server with it food heals over time for every player, but only a
   player who has it too sees the pale hearts. With it on a server without it, food is beta's.
 - **Item Repair** runs where the world runs too, so a server can use it with any client, vanilla beta 1.7.3 too. With it on a
   server without it, nothing is mended.
 - **Wild Saplings** runs where the world runs too, so a server can use it with any client, vanilla beta 1.7.3 too. With it
   on a server without it, saplings grow as in beta.
+- **Wary Creepers** runs where the world runs too, so a server can use it with any client, vanilla beta 1.7.3 too. With it
+  on a server without it, creepers are beta's.
+- **Wolf Packs** runs where the world runs too, so a server can use it with any client, vanilla beta 1.7.3 too. With it
+  on a server without it, wolves and creepers are beta's. A player without it feeds fish on a server with it all the same.
 - **Water Bottles**, **Alchemy**, **Blue Flowers**, **Explosive Arrows** and **Buried Towers** need every player to have them: the first four add blocks or items, and Buried Towers builds on the library's world generation, which needs it too. A server running one
   refuses anyone without it, vanilla clients included, with a message saying so. A player on a library pack with any mod
   on is offered **Match This Server's Mods**, which turns on what that server needs for their next launch. A client with
@@ -128,7 +151,8 @@ Worlds are kept in beta 1.7.3's own format, with the library's data beside it, s
 original game too. What you lose, plainly:
 
 - **World Rules**: nothing. Its choices stay in the world's `faithful-world.properties` and come back with the mod. The
-  hour can jump if the day's length was changed.
+  hour can jump if the day's length was changed. Worn bows look new and wear no more without it, and show their wear
+  again when it's back.
 - **Buried Towers**: towers it's built stay, as ordinary blocks, and new chunks go back to beta's own dungeons. A tower half
   made stays half made. Rooms the old Better Dungeons built stay too.
 - **Water Bottles**: its items don't survive. Bottles in that world become bowls for good. Alchemy goes off with it, as it needs it.
@@ -142,7 +166,9 @@ original game too. What you lose, plainly:
 - **Hearty Food**: food goes back to beta's. Healing still to come waits in the player's save and goes on if the mod returns.
 - **Item Repair**: nothing. What it mended stays mended, and Repair Bonus, if you turned it on, stays in the world's file.
 - **Wild Saplings**: nothing. Trees it grew stay, and saplings grow as in beta again.
-- **Plain F3** and **No Toasts** leave nothing in a world.
+- **Wolf Packs**: wolves eat as in beta again. Its rules stay in the world's file, and a wolf's healing still to come waits in
+  the save, and both come back with the mod.
+- **Wary Creepers**, **Plain F3** and **No Toasts** leave nothing in a world.
 
 While any library mod is on, Faithful Core is loaded and warns you before a world that's seen a removed content mod
 opens: **Make a Backup and Play**, **Play**, **Cancel**. A server refuses to start, and says how to go on, each time. If you turn off
@@ -178,8 +204,8 @@ contains into `local/release/faithful-library-<version>/`; [docs/building.md](do
 ## Credits and licence
 
 Made by Claude Opus 5.5, an AI model by Anthropic, at Studio Quire. Claude Fable 5.2 designed Explosive Arrows and
-Alchemy's Ward, Haste and Feather Potions, and drew the arrow's head and the golden flowers and feather. Idea,
-direction and play-testing: Shoalstone.
+Alchemy's Ward, Haste and Feather Potions, designed Wary Creepers and Wolf Packs with Shoalstone, and drew the
+arrow's head and the golden flowers and feather. Idea, direction and play-testing: Shoalstone.
 
 The library's code is under the [MIT licence](LICENSE). The packs build on Fabric Loader, Mixin, ASM, Babric's mappings,
 LWJGL, SDL and OpenAL Soft, each under its own licence; the downloads carry their notices and licence texts, and the

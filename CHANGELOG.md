@@ -4,6 +4,32 @@ The Faithful Library's releases, newest first. One version number for Faithful C
 packs and server packages. Each names the edition releases its packs are built on, whose mods and LWJGL are inside as
 those releases have them, and Faithful Settings is Old Faithful's. Entries say what a player or server owner notices.
 
+## 0.4.0 (2026-11-10)
+
+Library packs for Old Faithful 0.2.4 and Still Faithful 0.6.0, on Pure Faithful 0.1.5. From Still Faithful 0.6.0 (in
+its pack): skeletons shoot from their eyes, so they can now hit you under a ceiling two blocks high; squid swim on just
+under the surface instead of bouncing against it; and blasts and small things show from further away. Its changelog
+has the detail. Two new mods, on in the packs and server packages, and a new rule in World Rules:
+
+- **World Rules**: a new rule, **Bows Wear Out**, off to start with. On, a bow lasts 385 shots, as when bows first wore
+  out in 1.0, whichever arrows it shoots, with a bar under it showing its wear like a tool's, and Item Repair makes one of two worn
+  bows. Turned off, worn bows look new and wear no more, and show their wear again when it's back on. A worn bow makes a
+  dispenser as a new one does.
+- **Wary Creepers**, a new mod: creepers keep away from a jack-o'-lantern whose lit face they can see, within 8 blocks,
+  and come back once they no longer see one in reach. A creeper coming from behind a lantern isn't scared, nor one with a
+  wall or glass in the way, and one already at your side still swells. It runs where the world runs, so a server can
+  use it with any client.
+- **Wolf Packs**, a new mod: your tamed wolves take on a different monster each, and the next when theirs dies, where
+  beta sent them all at one; they go for a monster after you within 4 blocks, or a skeleton shooting at you, before it
+  hurts you; they fight creepers, which beta's never did; and they eat fish as well as pork, each food healing a wolf
+  what it heals you, over time with Hearty Food. Each is a world rule. It runs where the world runs, so a server can
+  use it with any client.
+- **Stagehand**: `give redstone_torch` gives the redstone torch a player crafts, lit. It gave beta's unlit one, which
+  stays dark where it's placed until something beside it changes; that one is `unlit_redstone_torch` now.
+- **Faithful Core**, for writing mods: `Creepers.onFright`, for a mod to say what frightens a creeper. Every such mod's
+  creepers flee one way, the core's, so two mods never pull a creeper two ways
+  ([docs/library-authoring.md](docs/library-authoring.md)).
+
 ## 0.3.0 (2026-11-09)
 
 Library packs for Old Faithful 0.2.4 and Still Faithful 0.5.1, on Pure Faithful 0.1.5. From Old Faithful 0.2.4 (in

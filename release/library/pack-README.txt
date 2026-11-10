@@ -14,7 +14,8 @@ library's code is loaded, and nothing new goes over the network. The switches ar
 
 The mods:
 - World Rules: rules for each world, on its page in Mods... and on Create World's World Rules... page: Mobs Break Blocks,
-  Blasts Destroy Items, Keep Inventory, Sleeping, Day Length, Weather, Natural Monsters, Monster Light, Apple Drops, Falling Hit Bonus. A world
+  Blasts Destroy Items, Keep Inventory, Sleeping, Day Length, Weather, Natural Monsters, Monster Light, Apple Drops, Falling Hit Bonus,
+  Bows Wear Out (385 shots, as in 1.0). A world
   nobody changed plays as beta. Lock Rules locks a world's rules so nothing in the game changes them; taking the line
   rules-locked=true out of the world's faithful-world.properties, with the game closed, unlocks them. While a world's
   rules are locked, Mods... doesn't switch off a mod that has rules.
@@ -51,6 +52,19 @@ The mods:
   off, and it hurts you too if you fire too close. Its puffs show as far off as you can hear the bang, where beta draws a
   blast's only within 16 blocks of you. A bow shoots whichever arrows come first in your inventory, the hotbar from the
   left first, so where you keep them decides. Dispensers shoot them too.
+- Wary Creepers: creepers keep away from a jack-o'-lantern whose lit face they can see. A creeper within 8 blocks, on
+  the side the face looks out on and with nothing in the way, turns and walks off, and comes back once it no longer
+  sees a lit face in reach. A creeper coming from behind a lantern isn't scared at all, so mind which way each one
+  faces: it faces you as you place it. Glass, leaves and walls hide it, as they hide you from a creeper. One already at
+  your side still swells. Carrying or wearing a pumpkin does nothing.
+- Wolf Packs: your tamed wolves take on a different monster each. A fight starts when you hit something or something
+  hurts you, as in beta, or when a monster after you comes within 4 blocks of you or a skeleton shoots at you; then
+  each wolf goes for whichever monster after you or your wolves has the fewest wolves on it, what you hit first, and
+  when its own dies it takes the next. A wolf that can't reach its monster gives up on it after a while. Wolves fight
+  creepers too, and a bitten creeper keeps coming for you.
+  Wolves eat fish as well as pork, and each food heals a wolf what it heals you (with Hearty Food, as it heals you);
+  a click with its food never sits a wolf down or stands it up.
+  Each part is a world rule.
 - Item Repair: two worn tools, weapons or pieces of armour of the same kind in the crafting grid make one, with what
   was left of both, up to as good as new, as in later versions. A world rule, Repair Bonus, off to start with, adds a
   twentieth of a new one's durability on top.
@@ -62,7 +76,10 @@ On a server: World Rules runs where the world runs, so a server can use it with 
 too, with food healing over time for everyone there, though only a player who has it too
 sees the pale hearts; on a server without it, food is beta's. Item Repair runs where the world runs too: any client can
 mend on a server with it, and nothing is mended on one without it. Wild Saplings runs where the world runs too: any
-client gets its trees on a server with it, and on one without it saplings grow as in beta. Plain F3 and No Toasts are yours alone and work anywhere. A server running Water Bottles, Alchemy, Blue Flowers, Explosive Arrows or Buried Towers needs every player
+client gets its trees on a server with it, and on one without it saplings grow as in beta. Wary Creepers runs where the
+world runs too: on a server with it creepers keep away from lanterns for everyone there, and on one without it they're
+beta's. Wolf Packs runs where the world runs too: on a server with it every player's wolves spread out, guard them,
+fight creepers and eat fish, and on one without it they're beta's. Plain F3 and No Toasts are yours alone and work anywhere. A server running Water Bottles, Alchemy, Blue Flowers, Explosive Arrows or Buried Towers needs every player
 to have it: anyone else is refused with a message saying so. If you have any library mod on, the refusal screen's Match
 This Server's Mods turns on what that server needs, for your next launch; with none on, turn them on as above.
 With them on you can still join servers without them, where they can't be made.
@@ -73,7 +90,8 @@ Turning a mod off or removing it:
 - Your world opens without it. World Rules' choices stay in the world's file and come back with the mod; the hour may
   jump if you'd changed the day's length. Towers already built stay, as ordinary blocks, and new chunks go back to beta's
   dungeons. Hearty Food's healing still to come waits in your save and goes on if the mod returns. Trees Wild Saplings
-  grew stay. Plain F3 and No Toasts leave nothing behind.
+  grew stay. Wolf Packs' rules stay in the world's file, and wolves eat as in beta. Wary Creepers, Plain F3 and No Toasts leave
+  nothing behind.
 - Water Bottles' items don't survive: bottles in that world become bowls for good, the next time you open it. Alchemy
   goes off with it, as it needs it.
 - Alchemy's don't either: golden roses and bluebells become roses, golden dandelions dandelions, golden feathers
@@ -90,8 +108,8 @@ original game and in every edition, as if the mods had been removed.
 If something goes wrong, the game's log is .minecraft/logs/purefaithful/latest.log.
 
 Made by Claude Opus 5.5, an AI model by Anthropic, at Studio Quire. Claude Fable 5.2 designed Explosive Arrows and
-Alchemy's Ward, Haste and Feather Potions, and drew the arrow's head and the golden flowers and feather. Idea,
-direction and play-testing: Shoalstone.
+Alchemy's Ward, Haste and Feather Potions, designed Wary Creepers and Wolf Packs with Shoalstone, and drew the
+arrow's head and the golden flowers and feather. Idea, direction and play-testing: Shoalstone.
 Open source under the MIT licence. Software by others included here, and its licences: THIRD-PARTY-NOTICES.txt,
 licenses/ and sources/.
 @HOMEPAGE@

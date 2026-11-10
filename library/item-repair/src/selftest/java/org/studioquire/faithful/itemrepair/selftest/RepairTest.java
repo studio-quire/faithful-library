@@ -73,7 +73,8 @@ public final class RepairTest extends WorldTest {
 		check("two in one cell isn't a repair", crafted(2, new ItemStack(Item.WOODEN_PICKAXE, 2, 50)) == null);
 		check("nor two to a cell twice", crafted(2, new ItemStack(Item.WOODEN_PICKAXE, 2, 50), new ItemStack(Item.WOODEN_PICKAXE, 2, 50)) == null);
 		check("dye's damage is its colour, so two dyes aren't mended", crafted(2, new ItemStack(Item.DYE, 1, 4), new ItemStack(Item.DYE, 1, 4)) == null);
-		check("beta's bow doesn't wear out, so it isn't mended", crafted(2, new ItemStack(Item.BOW), new ItemStack(Item.BOW)) == null);
+		// A worn bow mending where World Rules' Bows Wear Out is on, and not where it's off, is World Rules' test.
+		check("nor two new bows", crafted(2, new ItemStack(Item.BOW), new ItemStack(Item.BOW)) == null);
 	}
 
 	/** Stack data exists only with the content layer, which a set without content leaves off. */

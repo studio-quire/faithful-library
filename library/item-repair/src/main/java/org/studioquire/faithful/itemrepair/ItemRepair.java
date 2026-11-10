@@ -68,6 +68,8 @@ public final class ItemRepair implements FaithfulMod {
 		if (inputs.size() != 2) return null;
 		ItemStack first = inputs.get(0), second = inputs.get(1);
 		if (first.count != 1 || second.count != 1 || first.getDamage() == 0 && second.getDamage() == 0) return null;
+		// An item that wears only under a world's rule (World Rules' bows) has no most damage where it's off, and mends only where it wears.
+		if (!first.isDamageable()) return null;
 		// A client on a server without the mod: the server makes nothing, so show nothing.
 		if (!Server.running() && !presence.available()) return null;
 		ItemStack made = Stacks.copy(first);

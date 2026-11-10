@@ -107,7 +107,7 @@ Every mixin is a future conflict, and forty mods reach for the same places. Befo
 | Life | `Lifecycle`, `Ticks`, `Chunks`, `Worldgen`, `Server` (the running worlds and players, either side), `Days` (the day's length, the hour) |
 | Players | `Players` (join, leave, drops, respawn, dimension change, keepInventory), `Beds`, `Attachment` |
 | Blocks | `Blocks` (placed, broken, used), `Drops`, `Crop`, `Leaves`, `Log`, `Growth` (bonemeal, farmland), `Fire`, `Explosions`, `Lightning` |
-| Entities | `Entities` (spawning, monsters appearing on their own, damage, death, natural spawn lists), `Content.entity`, `EntitySpawnData` |
+| Entities | `Entities` (spawning, monsters appearing on their own, damage, death, natural spawn lists), `Creepers` (what frightens one; how it flees is the core's), `Content.entity`, `EntitySpawnData` |
 | Items | `Stacks`, `Tools`, `Recipes`, `Tags`, `Armor`, `Names` (anyone's blocks and items by name) |
 | Block entities | `Lookups`, `ItemStorage`, `SyncedBlockEntity`, `BlockEntities`, `Containers` |
 | World rules, talk | `mod.rules()`, `Commands`, `mod.channel()`, `Sounds` |

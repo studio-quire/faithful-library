@@ -30,6 +30,7 @@ it's the plain @EDITION_NAME@ server: the library's code isn't loaded and nothin
 - world-rules: rules for each world, the same for everyone on the server. /rule <name> <value> for ops and the console,
   or the world's faithful-world.properties. /rule lock locks them until the line rules-locked=true comes out of that
   file, with the server stopped. Any client can join, vanilla too; a client with World Rules shows the server's values.
+  With /rule bows_wear_out true, bows last 385 shots; a player without World Rules sees no bar for the wear.
 - buried-towers: ruined towers on the land, going a long way down, in new chunks, and no more of beta's small dungeons
   there. Every player needs it, like water-bottles below. A new world's towers are Simple, crude stumps like beta's
   dungeons, or Complex, big towers of dressed stone, with the line rule.buried-towers.style=complex in
@@ -52,6 +53,14 @@ it's the plain @EDITION_NAME@ server: the library's code isn't loaded and nothin
 - wild-saplings: saplings grow every tree that grows wild, as often as it grows wild: spruce saplings grow pines too, and
   oak saplings grow big oaks a third of the time in Forest and Rainforest, as full as wild ones. Any client can join,
   vanilla too.
+- wary-creepers: creepers keep away from a jack-o'-lantern whose lit face they can see, within 8 blocks: not from
+  behind it, through a wall or through glass, and one already beside a player still swells. Any client can join,
+  vanilla too.
+- wolf-packs: tamed wolves take on a different monster each, and the next when theirs dies, where beta sent them all at
+  one; they go for a monster after their owner within 4 blocks and a skeleton shooting at them, and fight creepers,
+  which beta's never did; wolves eat fish as well as pork, each food healing its own worth (with hearty-food, as
+  hearty-food heals players). Four world rules, spread_out, fight_creepers, feeding and guarding, all on. Any client
+  can join, vanilla too, and feed fish.
 
 Plain F3 and No Toasts are client-only, so they aren't here, and players can use them on any server.
 
@@ -69,6 +78,7 @@ A vanilla beta 1.7.3 server's world and server.properties work as they are: copy
 format, with the library's data beside it, which vanilla ignores.
 
 @HOMEPAGE@
-Open source under the MIT licence, made by Claude Opus 5.5 at Studio Quire, with Explosive Arrows
-and Alchemy's Ward, Haste and Feather Potions designed by Claude Fable 5.2 (both Anthropic's AI models).
+Open source under the MIT licence, made by Claude Opus 5.5 at Studio Quire. Claude Fable 5.2 designed Explosive
+Arrows and Alchemy's Ward, Haste and Feather Potions, and Wary Creepers and Wolf Packs with Shoalstone. Opus and
+Fable are Anthropic's AI models.
 Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.
