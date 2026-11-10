@@ -1,16 +1,21 @@
-@EDITION_NAME@ @EDITION_VERSION@ with the Faithful Library @VERSION@
+@NAME@ @VERSION@
+@TAGLINE@
 
 This folder is a Prism Launcher instance. Prism downloads Minecraft beta 1.7.3 itself, from Mojang, the first time
 you launch it; everything else is already here. You need a Minecraft account that owns the game.
 
-It's @EDITION_NAME@'s own pack with the Faithful Library's mods in .minecraft/mods-library, all on.
-@EDITION_LINE@ is what's underneath.
+@NAME@ is beta with more in it, where you still do everything yourself: @EDITION_NAME@'s own pack with the
+Faithful Library @LIBRARY_VERSION@'s mods in .minecraft/mods-library, all on. Underneath is
+@EDITION_LINE@.
+Through 0.4.0 this pack was called Still Faithful with the Faithful Library.
 
-Turning a mod off or on: in the game, Options > @EDITION_NAME@... > Mods... lists them. Each has a page with an Enabled
+Turning a mod off or on: in the game, Options > @NAME@... > Mods... lists them (Options > Still Faithful... > Mods...
+when every mod is off). Each has a page with an Enabled
 switch, which takes effect the next time you launch. Faithful Core, which the mods build on, comes on by itself when any
-mod is on and goes off when none is. With all of them off the pack plays exactly as @EDITION_NAME@ does: none of the
-library's code is loaded, and nothing new goes over the network. The switches are kept in
-.minecraft/mods-library/selection.txt.
+mod is on and goes off when none is. With all of them off the pack plays exactly as @EDITION_NAME@ does, and goes by
+its name on the title screen and in Options: none of the library's code is loaded, and nothing new goes over the
+network. The switches are kept in .minecraft/mods-library/selection.txt, and pack.properties beside it is what tells
+the game it's @NAME@.
 
 The mods:
 - World Rules: rules for each world, on its page in Mods... and on Create World's World Rules... page: Mobs Break Blocks,
@@ -81,10 +86,11 @@ world runs too: on a server with it creepers keep away from lanterns for everyon
 beta's. Wolf Packs runs where the world runs too: on a server with it every player's wolves spread out, guard them,
 fight creepers and eat fish, and on one without it they're beta's. Plain F3 and No Toasts are yours alone and work anywhere. A server running Water Bottles, Alchemy, Blue Flowers, Explosive Arrows or Buried Towers needs every player
 to have it: anyone else is refused with a message saying so. If you have any library mod on, the refusal screen's Match
-This Server's Mods turns on what that server needs, for your next launch; with none on, turn them on as above.
+This Server's Mods turns on what that server needs, for your next launch; with none on, it's Options > Still Faithful...
+> Mods..., as above.
 With them on you can still join servers without them, where they can't be made.
-With any library mod on, your login says you have Faithful Core: a server with the core can see that, and which of its
-own mod channels you share, but isn't told which other mods you have.
+With any library mod on, your game tells a server you join that you have the Faithful Library: a server with it can
+see that, and which of that server's own library mods you have too, but isn't told which other mods you have.
 
 Turning a mod off or removing it:
 - Your world opens without it. World Rules' choices stay in the world's file and come back with the mod; the hour may
@@ -109,7 +115,7 @@ If something goes wrong, the game's log is .minecraft/logs/purefaithful/latest.l
 
 Made by Claude Opus 5.5, an AI model by Anthropic, at Studio Quire. Claude Fable 5.2 designed Explosive Arrows and
 Alchemy's Ward, Haste and Feather Potions, designed Wary Creepers and Wolf Packs with Shoalstone, and drew the
-arrow's head and the golden flowers and feather. Idea, direction and play-testing: Shoalstone.
+arrow's head, the golden flowers and feather, and More Faithful's seal. Idea, direction and play-testing: Shoalstone.
 Open source under the MIT licence. Software by others included here, and its licences: THIRD-PARTY-NOTICES.txt,
 licenses/ and sources/.
 @HOMEPAGE@

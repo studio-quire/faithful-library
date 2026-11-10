@@ -987,35 +987,45 @@ if (findProject(':library:tower-check') != null) {
         if (gameJava.isPresent()) javaExecutable = gameJava
     }
 }
-// The library's packs and server packages as they ship (LibraryPackTestTask): as shipped with everything on, nothing ticked, no list, and each stage of a server's mods, as it comes among them.
-['Old': [pack: 'releasePackLibraryOld', server: 'releaseServerLibraryOld', args: []],
- 'Still': [pack: 'releasePackLibraryStill', server: 'releaseServerLibraryStill', args: ["-Doldfaithful.selftest.edition=Still Faithful:stillfaithful-polish".toString()]]].each { label, p ->
+// The content packs and their server packages as they ship (LibraryPackTestTask): as shipped with everything on, nothing ticked, no list, and
+// each stage of a server's mods, as it comes among them. One per pack (gradle/library.gradle's contentPacks): `morePackTest`. The pack's mods
+// and what each is (client-only, content) come from their fabric.mod.json, so the test is of the pack's own list.
+(rootProject.findProperty('contentPacks') ?: [:]).each { String key, Map p ->
     if (!rootProject.tasks.names.contains(p.pack)) return
-    def key = label.toLowerCase()
     def packZip = rootProject.tasks.named(p.pack)
     def serverZip = rootProject.tasks.named(p.server)
-    def unpacked = tasks.register("libraryPackTest${label}Unpack", Sync) {
+    def info = { String mod -> new groovy.json.JsonSlurper().parse(rootProject.file("library/${mod}/src/main/resources/fabric.mod.json")) }
+    def clientOnly = p.mods.findAll { info(it).environment == 'client' }
+    def content = p.mods.findAll { def f = info(it).custom?.faithful; f?.content || f?.match }
+    def names = p.mods.collect { "${it}:${info(it).name}" }.join(',')
+    def unpacked = tasks.register("${key}PackTestUnpack", Sync) {
         from { zipTree(packZip.get().archiveFile) }
-        into layout.buildDirectory.dir("pack-test/library-${key}/instance")
+        into layout.buildDirectory.dir("pack-test/${key}/instance")
     }
-    def unpackedServer = tasks.register("libraryPackTest${label}UnpackServer", Sync) {
+    def unpackedServer = tasks.register("${key}PackTestUnpackServer", Sync) {
         from { zipTree(serverZip.get().archiveFile) }
-        into layout.buildDirectory.dir("pack-test/library-${key}/server")
+        into layout.buildDirectory.dir("pack-test/${key}/server")
         eachFile { it.path = it.path.substring(it.path.indexOf('/') + 1) }
         includeEmptyDirs = false
     }
-    def packNatives = tasks.register("libraryPackTest${label}Natives", Sync) {
+    def packNatives = tasks.register("${key}PackTestNatives", Sync) {
         dependsOn unpacked
         from { fileTree(unpacked.get().destinationDir) { include 'libraries/*natives*.jar' }.collect { zipTree(it) } }
         exclude 'META-INF/**'
-        into layout.buildDirectory.dir("pack-test/library-${key}/natives")
+        into layout.buildDirectory.dir("pack-test/${key}/natives")
     }
     def libraries = unpacked.map { fileTree(it.destinationDir) { include 'libraries/*.jar'; exclude 'libraries/*natives*.jar', 'libraries/intermediary-*.jar' } }
-    tasks.register("libraryPackTest${label}", oldfaithful.gradle.LibraryPackTestTask) {
+    tasks.register("${key}PackTest", oldfaithful.gradle.LibraryPackTestTask) {
         group = 'verification'
-        description = "The ${label} Faithful library pack and server package from a release: as shipped, nothing ticked, and a server at each stage."
+        description = "The ${p.name} pack and server package from a release: as shipped, nothing ticked, and a server at each stage."
         dependsOn packNatives, unpackedServer
-        it.label = label
+        label = p.name
+        packMods = p.mods
+        clientOnlyMods = clientOnly
+        contentMods = content
+        // With any of its mods on the game names the pack (its pack.properties, read by Faithful Core); with none, Still Faithful, whose settings button it has.
+        packEdition = "${p.name}:=${p.version}".toString()
+        baseEdition = "Still Faithful:stillfaithful-polish"
         instance = layout.dir(unpacked.map { it.destinationDir })
         serverPackage = layout.dir(unpackedServer.map { it.destinationDir })
         serverJar = mc.serverJar
@@ -1023,21 +1033,17 @@ if (findProject(':library:tower-check') != null) {
         intermediaryMappings = layout.file(unpacked.map { fileTree(it.destinationDir) { include 'libraries/intermediary-*.jar' }.singleFile })
         loaderClasspath.from(libraries)
         mods.from(tasks.named('remapJar'))
-        natives = layout.buildDirectory.dir("pack-test/library-${key}/natives")
+        natives = layout.buildDirectory.dir("pack-test/${key}/natives")
         soundsGameDir = rootProject.layout.projectDirectory.dir('local/cache/selftest-sounds')
         privateDesktop = rootProject.layout.projectDirectory.file('tools/private_desktop.py')
-        runDir = rootProject.layout.projectDirectory.dir("local/run/library-pack-${key}")
+        runDir = rootProject.layout.projectDirectory.dir("local/run/${key}-pack")
         oldFaithful = true
         windowRuns = false
         timeoutSeconds = 300
-        extraJvmArgs = p.args
+        // SettingsCheck checks the Mods menu against the pack's mods.
+        extraJvmArgs = ["-Doldfaithful.selftest.packMods=${names}".toString()]
         if (gameJava.isPresent()) javaExecutable = gameJava
     }
-}
-if (tasks.names.contains('libraryPackTestOld')) tasks.register('libraryPackTest') {
-    group = 'verification'
-    description = "The library's packs and server packages as they ship, for both editions."
-    dependsOn 'libraryPackTestOld', 'libraryPackTestStill'
 }
 // The same on Linux x64, in Docker (tools/in_linux.py): `clientStartupTestLinux` runs it on both test images.
 def clientStartupLinux = linuxImages.collect { img ->

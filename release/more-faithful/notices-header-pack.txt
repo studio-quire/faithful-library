@@ -1,8 +1,9 @@
-@EDITION_NAME@ @EDITION_VERSION@ with the Faithful Library @VERSION@: notices
-=============================================================================
+More Faithful @VERSION@: notices
+============================
 
-This is @EDITION_LINE@ with the Faithful Library's mods beside it. What we made in them is open source under the MIT licence
-(licenses/faithful-library/LICENSE.txt): the purefaithful-*, oldfaithful-* and stillfaithful-* mods in .minecraft/mods,
+More Faithful is @EDITION_LINE@
+with the Faithful Library @LIBRARY_VERSION@'s mods beside it. What we made in them is open source under the MIT licence
+(licenses/more-faithful/LICENSE.txt): the purefaithful-*, oldfaithful-* and stillfaithful-* mods in .minecraft/mods,
 Faithful Core and the library's mods in .minecraft/mods-library, and the LWJGL 2 API and launcher setup in
 libraries/purefaithful-lwjgl-@PURE_VERSION@.jar. Source code: https://github.com/@REPO@
 

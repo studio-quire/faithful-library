@@ -1,10 +1,12 @@
-@EDITION_NAME@ server with the Faithful Library @VERSION@
-=========================================================
+More Faithful @VERSION@ server
+==========================
 
-@EDITION_NAME@'s server package, with the Faithful Library's server-side mods in mods/, all on, as they are in the
-library packs: Minecraft beta 1.7.3's own server, run through Fabric Loader with our @SERVER_MODS@ mods, from
-@EDITION_LINE@, and the library. Water Bottles, Alchemy, Blue Flowers, Explosive Arrows and Buried Towers are on, so as it comes this server refuses anyone without them, vanilla clients
-and the plain editions' packs included; the library packs have them. Below is how to take them out.
+More Faithful's server package: @EDITION_NAME@'s, with the Faithful Library @LIBRARY_VERSION@'s server-side mods in mods/,
+all on, as they are in the More Faithful pack. Minecraft beta 1.7.3's own server, run through Fabric Loader with our
+@SERVER_MODS@ mods, from
+@EDITION_LINE@, and the library's. Water Bottles, Alchemy, Blue Flowers,
+Explosive Arrows and Buried Towers are on, so as it comes this server refuses anyone without them, vanilla clients and
+the editions' own packs included; the More Faithful pack has them. Below is how to take them out.
 
 From the editions: it's hardened against malicious clients, a crash or power cut can't damage the world, and beta's clear
 mistakes are fixed, each on a switch in config/. @EDITION_NAME@'s own README says more: https://github.com/@EDITION_REPO@
@@ -42,7 +44,7 @@ it's the plain @EDITION_NAME@ server: the library's code isn't loaded and nothin
 - hearty-food: food heals half as much again, at half a heart a second. Any client can join; only one with the mod too
   sees the pale hearts showing where a player will end up.
 - water-bottles: every player needs it. A server running it refuses anyone without it, vanilla clients included, with a
-  message saying so. A player on a library pack with any mod on gets a button to turn on what your server needs.
+  message saying so. A player on the More Faithful pack with any mod on gets a button to turn on what your server needs.
 - alchemy: potions of health, ward, haste and feather from gilded flowers and feathers. Every player needs it, in the
   same way. It needs water-bottles, so that goes out only with it.
 - blue-flowers: bluebells in patches across Taiga and Tundra, in new chunks. Every player needs it, in the same way.

@@ -16,6 +16,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.LightType;
 import net.minecraft.world.gen.feature.DungeonFeature;
 import org.studioquire.faithful.buriedtowers.Loot;
 import org.studioquire.faithful.buriedtowers.Towers;
@@ -44,19 +45,41 @@ public final class WaysTest extends WorldTest {
 		}
 	}
 
-	/** A pool two deep with a rim, as a way down builds one, its water's top cell at {@code LIFT + 1}. */
+	/**
+	 * A pool two deep with a rim, as a way down builds one, its water's top cell at {@code LIFT + 1}. The rim's top course is glowstone: in a cold biome beta's chunk tick turns
+	 * still water open to the sky to ice, unless the cell over it has a block light of 10 or more, and on a plot on snow a pool froze and the falls into it hit ice (2026-11-10).
+	 * Light changes nothing a fall meets.
+	 */
 	private void pool(int half) {
 		for (int dx = -half - 1; dx <= half + 1; dx++) {
 			for (int dz = -half - 1; dz <= half + 1; dz++) {
 				boolean rim = Math.max(Math.abs(dx), Math.abs(dz)) == half + 1;
 				quiet(dx, LIFT - 1, dz, Blocks.STONE, 0);
 				quiet(dx, LIFT, dz, rim ? Blocks.STONE : Blocks.WATER, 0);
-				quiet(dx, LIFT + 1, dz, rim ? Blocks.STONE : Blocks.WATER, 0);
+				quiet(dx, LIFT + 1, dz, rim ? Blocks.GLOWSTONE : Blocks.WATER, 0);
 			}
 		}
 	}
 
+	/** Beta's freezing rule without the biome: the top of a column, still water, with a block light under 10 over it. */
+	private boolean couldFreeze(int half) {
+		for (int dx = -half; dx <= half; dx++) {
+			for (int dz = -half; dz <= half; dz++) {
+				int top = world.getTopSolidBlockY(x + dx, z + dz);
+				if (top < 128 && world.getBlockId(x + dx, top - 1, z + dz) == Blocks.WATER && world.getBlockMeta(x + dx, top - 1, z + dz) == 0
+						&& world.getBrightness(LightType.BLOCK, x + dx, top, z + dz) < 10) return true;
+			}
+		}
+		return false;
+	}
+
+	private void unfrozen(int half) {
+		await("no water there that a cold biome could freeze", 40, () -> !couldFreeze(half));
+	}
+
 	private void place(double dy) {
+		// Beta's death leaves a player 0.2 high with their eyes 0.1 up, and setting their health back doesn't undo it: after one, a drop into sand reads as suffocation.
+		if (player.height < 1.0F) throw new IllegalStateException("the player died earlier in this test and is still the size of a dead one, so nothing after can be read");
 		player.setPosition(x + 0.5, y + dy + player.standingEyeHeight, z + 0.5);
 		player.velocityX = player.velocityY = player.velocityZ = 0;
 		health = player.health;
@@ -89,6 +112,7 @@ public final class WaysTest extends WorldTest {
 		then(this::wipe);
 		then(() -> pool(1));
 		wait(5);
+		unfrozen(1);
 		fallInto("a fall of 6", 6);
 		fallInto("a fall of 16", 16);
 		fallInto("a fall of 40", 40);
@@ -154,7 +178,7 @@ public final class WaysTest extends WorldTest {
 			pool(2);
 			// Three deep: one more course of water and rim, as the plug's own pool has.
 			for (int dx = -3; dx <= 3; dx++) {
-				for (int dz = -3; dz <= 3; dz++) quiet(dx, LIFT + 2, dz, Math.max(Math.abs(dx), Math.abs(dz)) == 3 ? Blocks.STONE : Blocks.WATER, 0);
+				for (int dz = -3; dz <= 3; dz++) quiet(dx, LIFT + 2, dz, Math.max(Math.abs(dx), Math.abs(dz)) == 3 ? Blocks.GLOWSTONE : Blocks.WATER, 0);
 			}
 			for (int dx = -1; dx <= 0; dx++) {
 				for (int dz = -1; dz <= 0; dz++) {
@@ -166,6 +190,7 @@ public final class WaysTest extends WorldTest {
 				for (int dz = -2; dz <= 1; dz++) if (world.getBlockId(x + dx, y + LIFT + 18, z + dz) == 0) quiet(dx, LIFT + 18, dz, Blocks.STONE, 0);
 			}
 		});
+		unfrozen(2);
 		// A generated plug has no tick waiting, and placing one here does: it's let run out on its support, then the support goes quietly.
 		wait(120);
 		then(() -> {
@@ -205,6 +230,7 @@ public final class WaysTest extends WorldTest {
 			quiet(0, LIFT + 8, 0, Blocks.GRAVEL, 0);
 		});
 		wait(20);
+		unfrozen(1);
 		then(() -> quiet(0, LIFT + 7, 0, 0, 0));
 		wait(10);
 		then(() -> {
@@ -269,7 +295,8 @@ public final class WaysTest extends WorldTest {
 			int top = LIFT + 24;
 			for (int dx = -1; dx <= 1; dx++) {
 				for (int dz = -1; dz <= 1; dz++) {
-					quiet(dx, top, dz, Blocks.STONE, 0);
+					// Its top course glowstone too, as the pool's rim.
+					quiet(dx, top, dz, Blocks.GLOWSTONE, 0);
 					quiet(dx, top - 1, dz, Blocks.STONE, 0);
 				}
 			}
@@ -277,6 +304,7 @@ public final class WaysTest extends WorldTest {
 			for (int dy = top - 1; dy >= LIFT + 2; dy--) quiet(0, dy, 0, Blocks.WATER, Blocks.FALLING);
 		});
 		wait(20);
+		unfrozen(1);
 		then(() -> {
 			player.health = 20;
 			player.air = 300;

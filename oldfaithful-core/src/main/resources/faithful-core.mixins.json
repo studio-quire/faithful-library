@@ -39,6 +39,7 @@
   ],
   "client": [
     "client.BipedEntityModelMixin",
+    "client.BrandingMixin",
     "client.ClientNetworkHandlerAccessor",
     "client.ClientNetworkHandlerMixin",
     "client.ClientWorldMixin",
@@ -51,8 +52,10 @@
     "client.KeybindsScreenMixin",
     "client.LoginHelloPacketMixin",
     "client.MinecraftMixin",
+    "client.OptionsScreenMixin",
     "client.PlayerEntityRendererMixin",
     "client.ScreenMixin",
+    "client.SettingsScreenMixin",
     "client.SingleplayerInteractionManagerMixin",
     "client.SlotAccessor",
     "client.SoundEntryAccessor",

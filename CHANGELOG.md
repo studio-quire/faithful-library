@@ -1,8 +1,26 @@
 # Changelog
 
-The Faithful Library's releases, newest first. One version number for Faithful Core, the library's mods, the library
-packs and server packages. Each names the edition releases its packs are built on, whose mods and LWJGL are inside as
-those releases have them, and Faithful Settings is Old Faithful's. Entries say what a player or server owner notices.
+The Faithful Library's releases, newest first. One version number for Faithful Core and the library's mods; Faithful
+Settings, beside them, is Old Faithful's. Through 0.4.0 it was the library packs' and their server packages' number too,
+and each entry named the edition releases the packs were built on. The pack with every mod on is now
+[More Faithful](https://github.com/studio-quire/more-faithful), with its own changelog. Entries say what a player or
+server owner notices.
+
+## 0.5.0 (2026-11-10)
+
+Faithful Settings is Old Faithful 0.2.4's, as in 0.4.0.
+
+- **The packs have moved.** The library's pack on Still Faithful is now
+  [More Faithful](https://github.com/studio-quire/more-faithful), with releases of its own, and its pack on Old
+  Faithful is gone: each of our packs is now the one before it with more (Pure, Old and Still Faithful, then More
+  Faithful). This repository's releases hold the mods, Faithful Core and Faithful Settings as jars on their own. For the
+  mods on Old Faithful without Still Faithful's changes, put them into an Old Faithful instance. An instance from the
+  old pack on Old Faithful keeps working: to update its mods, replace each jar in its `.minecraft/mods-library`,
+  `faithful-core` included, with the new one under the old name (`alchemy-0.5.0.jar` becomes `alchemy.jar`). Nothing
+  about the mods changed: worlds carry over as they are.
+- **Faithful Core** names the pack it came in: in More Faithful, while any of its mods is on, the title screen and the
+  settings in Options say More Faithful. The pack carries `mods-library/pack.properties` saying so; mods put into an
+  instance by hand bring none, so the game goes on naming its edition there.
 
 ## 0.4.0 (2026-11-10)
 

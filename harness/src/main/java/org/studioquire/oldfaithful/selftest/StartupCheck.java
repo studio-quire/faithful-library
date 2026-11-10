@@ -52,7 +52,7 @@ public final class StartupCheck {
 	private static final String EXPECT_MISSING = System.getProperty("oldfaithful.selftest.expectMissing");
 	/** The conflict harness: host:port of a server to try, reporting what screen it ends on instead of playing. */
 	private static final String TRY_SERVER = System.getProperty("oldfaithful.selftest.tryServer");
-	/** After a refusal's drawn: presses Match This Server's Mods and reports what the screen says then (`libraryPackTest`). */
+	/** After a refusal's drawn: presses Match This Server's Mods and reports what the screen says then (`morePackTest`). */
 	private static final boolean USE_SET = Boolean.getBoolean("oldfaithful.selftest.useServerSet");
 	/** The conflict harness: host:port of a hostile server, joined again and again until its kick says it's done. */
 	private static final String HOSTILE = System.getProperty("oldfaithful.selftest.hostile");
@@ -147,8 +147,11 @@ public final class StartupCheck {
 	 */
 	private static void titleLineCheck() {
 		FabricLoader loader = FabricLoader.getInstance();
-		String expected = EDITION != null
-				? EDITION.split(":")[0] + " " + loader.getModContainer(EDITION.split(":")[1]).get().getMetadata().getVersion().getFriendlyString()
+		// "Name:mod id" takes the version that mod carries; "Name:=version" (a content pack's, from its marker) is given outright.
+		String[] edition = EDITION != null ? EDITION.split(":", 2) : null;
+		String expected = edition != null
+				? edition[0] + " " + (edition[1].startsWith("=") ? edition[1].substring(1)
+						: loader.getModContainer(edition[1]).get().getMetadata().getVersion().getFriendlyString())
 				: loader.getModContainer("oldfaithful-fixes")
 				.map(m -> "Old Faithful " + m.getMetadata().getVersion().getFriendlyString())
 				.orElseGet(() -> "Pure Faithful " + loader.getModContainer("purefaithful-hardening").get().getMetadata().getVersion().getFriendlyString());

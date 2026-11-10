@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputDirectory;
@@ -29,12 +30,14 @@ import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 
 /**
- * A release's library pack and server package, unpacked as they ship (gradle/library.gradle), each launched with the arguments the pack's own component
- * gives. As shipped: every mod on the list, the edition's whole start-up test with all of it loaded, in a new world. With nothing ticked: the same test, none of the
- * library's code present, the login a vanilla client's, the Mods menu offering every mod, and ticks written for the next launch. With no list at all, the same. Then the
- * server package with every library jar taken out (the plain edition's: a raw vanilla client hears nothing new, the pack plays there both as shipped and with nothing on), with
- * the server-side mods but Water Bottles (still any client). Then as it comes, everything on (vanilla refused, a plain pack refused, a pack with a mod on told what's missing and
- * offered the server's set, the pack as shipped admitted), and with Water Bottles taken out again (the server refuses to start, then goes on when told). Prism itself isn't run here.
+ * A release's content pack (More Faithful) and its server package, unpacked as they ship (gradle/library.gradle), each launched with the arguments the pack's own
+ * component gives. As shipped: every mod on the list, the edition's whole start-up test with all of it loaded, in a new world. With nothing ticked: the same test, none
+ * of the library's code present, the login a vanilla client's, the Mods menu offering every mod, and ticks written for the next launch. With no list at all, the same.
+ * Then the server package with every library jar taken out (the plain edition's: a raw vanilla client hears nothing new, the pack plays there both as shipped and with
+ * nothing on), with the server-side mods but those with content (still any client). Then as it comes, everything on (vanilla refused, a plain pack refused, a pack with a
+ * mod on told what's missing and offered the server's set, the pack as shipped admitted), and with the mods with content taken out again (the server refuses to start,
+ * then goes on when told). Which mods are which comes from the build, so the pack's own list is the one tested. With any of its mods on, the title screen and Options
+ * name the pack, and with none, the edition below. Prism itself isn't run here.
  */
 public abstract class LibraryPackTestTask extends ClientStartupTask {
 	/** The pack, unzipped: {@code .minecraft/}, {@code patches/} and the rest. */
@@ -51,14 +54,36 @@ public abstract class LibraryPackTestTask extends ClientStartupTask {
 	@PathSensitive(PathSensitivity.NONE)
 	public abstract RegularFileProperty getServerJar();
 
-	/** Which edition, for its report. */
+	/** Which pack, for its report. */
 	@Input
 	public abstract Property<String> getLabel();
+
+	/** Every library mod the pack carries, by id, the core aside. */
+	@Input
+	public abstract ListProperty<String> getPackMods();
+
+	/** Of those, the ones that run only on a client, so no server package has them. */
+	@Input
+	public abstract ListProperty<String> getClientOnlyMods();
+
+	/** Of those, the ones every player on a server running them must have too (they add content): a vanilla client is refused there. */
+	@Input
+	public abstract ListProperty<String> getContentMods();
+
+	/**
+	 * What the game should call itself with any of the pack's mods on, as the start-up test's edition ({@code Name:=version}): the pack carries a file
+	 * naming it, which Faithful Core reads. With none on it's the edition below ({@link #getBaseEdition}).
+	 */
+	@Input
+	public abstract Property<String> getPackEdition();
+
+	/** The edition the pack is with every mod off ({@code Name:mod id}, the mod whose version it shows). */
+	@Input
+	public abstract Property<String> getBaseEdition();
 
 	private static final String LIST = "mods-library/selection.txt";
 	private static final Pattern JVM_ARGS = Pattern.compile("\"\\+jvmArgs\"\\s*:\\s*\\[(.*?)]", Pattern.DOTALL);
 	private static final Pattern QUOTED = Pattern.compile("\"([^\"]+)\"");
-	private static final List<String> SERVER_MODS = List.of("world-rules", "hearty-food", "item-repair", "wild-saplings", "wary-creepers", "wolf-packs");
 
 	private final List<String> lines = new ArrayList<>();
 	private final List<String> failures = new ArrayList<>();
@@ -77,13 +102,18 @@ public abstract class LibraryPackTestTask extends ClientStartupTask {
 		Path instance = getInstance().get().getAsFile().toPath();
 		packArgs = jvmArgs(instance);
 		expect("the pack's component launches with the list: " + packArgs, packArgs.contains("-Dfabric.addMods=@" + LIST));
+		Path marker = instance.resolve(".minecraft/mods-library/pack.properties");
+		java.util.Properties named = new java.util.Properties();
+		if (Files.isRegularFile(marker)) try (java.io.Reader in = Files.newBufferedReader(marker)) { named.load(in); }
+		String[] edition = getPackEdition().get().split(":=", 2);
+		expect("the pack names itself, " + named, edition[0].equals(named.getProperty("name")) && edition[1].equals(named.getProperty("version")));
 
 		Path shipped = game(run, "as-shipped", instance);
 		expect("the pack ships every mod on", Files.readString(shipped.resolve(LIST)).equals(allOn()));
 		lines.add("--- as shipped, everything on, a new world: the edition's whole start-up test");
 		List<String> played = launch(shipped, false, args("-Doldfaithful.selftest.libraryPack=on", "-Doldfaithful.selftest.expectSize=1000x600", "-Dorg.prismlauncher.window.dimensions=1000x600", "-Doldfaithful.selftest.expectMaximized=false"), failures);
 		lines.addAll(played);
-		for (String id : List.of("faithful-core", "alchemy", "blue-flowers", "buried-towers", "explosive-arrows", "hearty-food", "item-repair", "no-toasts", "plain-f3", "wary-creepers", "water-bottles", "wild-saplings", "wolf-packs", "world-rules")) {
+		for (String id : withCore()) {
 			expect("as shipped: the loader lists " + id, played.stream().anyMatch(l -> l.contains(id)));
 		}
 		expect("the new world's file has seen Water Bottles", Files.isRegularFile(shipped.resolve("saves/oldfaithful-startup/faithful-world.properties"))
@@ -114,15 +144,21 @@ public abstract class LibraryPackTestTask extends ClientStartupTask {
 		int port = freePort();
 		Path dir = serverFolder(run, "server", port);
 		Path mods = dir.resolve("mods");
-		expect("the server package has the core, the settings and every server-side mod on",
-				nameOf(mods, "faithful-core") != null && nameOf(mods, "oldfaithful-settings") != null && nameOf(mods, "water-bottles") != null && nameOf(mods, "alchemy") != null && SERVER_MODS.stream().allMatch(m -> nameOf(mods, m) != null));
-		expect("and no client-only mod", nameOf(mods, "plain-f3") == null && nameOf(mods, "no-toasts") == null);
+		List<String> serverSide = new ArrayList<>(getPackMods().get());
+		serverSide.removeAll(getClientOnlyMods().get());
+		List<String> withoutContent = new ArrayList<>(serverSide);
+		withoutContent.removeAll(getContentMods().get());
+		expect("the server package has the core, the settings and every server-side mod on (" + String.join(", ", serverSide) + ")",
+				nameOf(mods, "faithful-core") != null && nameOf(mods, "oldfaithful-settings") != null && serverSide.stream().allMatch(m -> nameOf(mods, m) != null));
+		expect("and no client-only mod", getClientOnlyMods().get().stream().allMatch(m -> nameOf(mods, m) == null));
 
 		// Its own folder, so these worlds never see Water Bottles.
 		Path plainDir = serverFolder(run, "server-plain", port);
 		Path plainMods = plainDir.resolve("mods"), held = plainDir.resolve("held");
 		Files.createDirectories(held);
-		for (String mod : List.of("faithful-core", "oldfaithful-settings", "water-bottles", "alchemy", "blue-flowers", "world-rules", "buried-towers", "explosive-arrows", "hearty-food", "item-repair", "wild-saplings", "wary-creepers", "wolf-packs")) {
+		List<String> allOut = new ArrayList<>(List.of("faithful-core", "oldfaithful-settings"));
+		allOut.addAll(serverSide);
+		for (String mod : allOut) {
 			Files.move(plainMods.resolve(nameOf(plainMods, mod)), held.resolve(nameOf(plainMods, mod)));
 		}
 		start(plainDir, "every library jar out");
@@ -142,11 +178,11 @@ public abstract class LibraryPackTestTask extends ClientStartupTask {
 
 		Files.move(held.resolve(nameOf(held, "faithful-core")), plainMods.resolve(nameOf(held, "faithful-core")));
 		Files.move(held.resolve(nameOf(held, "oldfaithful-settings")), plainMods.resolve(nameOf(held, "oldfaithful-settings")));
-		for (String mod : SERVER_MODS) Files.move(held.resolve(nameOf(held, mod)), plainMods.resolve(nameOf(held, mod)));
+		for (String mod : withoutContent) Files.move(held.resolve(nameOf(held, mod)), plainMods.resolve(nameOf(held, mod)));
 		start(plainDir, "all but the mods with content");
 		try {
 			try (RawClient vanilla = new RawClient(port, "PlainPlayer")) {
-				expect("the mods without content on (" + String.join(", ", SERVER_MODS) + "): a vanilla client logs in", vanilla.login(60) == null);
+				expect("the mods without content on (" + String.join(", ", withoutContent) + "): a vanilla client logs in", vanilla.login(60) == null);
 			}
 			expect("the plain pack plays there", tryServer(run, "plain-on-others", instance, "", port).startsWith("admitted"));
 			expect("a pack with everything on plays there", tryServer(run, "all-on-others", instance, allOn(), port).startsWith("admitted"));
@@ -178,12 +214,9 @@ public abstract class LibraryPackTestTask extends ClientStartupTask {
 			stop("as it comes");
 		}
 
-		// Alchemy goes with it, as it needs it: the loader wouldn't start with one and not the other.
-		Files.delete(bottles);
-		Files.delete(mods.resolve(nameOf(mods, "alchemy")));
-		Files.delete(mods.resolve(nameOf(mods, "buried-towers")));
-		Files.delete(mods.resolve(nameOf(mods, "blue-flowers")));
-		Files.delete(mods.resolve(nameOf(mods, "explosive-arrows")));
+		// Every mod with content out, so a vanilla client can join once the server goes on (Alchemy goes with Water Bottles in any case, as it
+		// needs it: the loader wouldn't start with one and not the other).
+		for (String mod : getContentMods().get()) Files.delete(mods.resolve(nameOf(mods, mod)));
 		boolean windows = System.getProperty("os.name").toLowerCase().contains("win");
 		List<String> command = windows ? List.of("cmd", "/c", dir.resolve("start.bat").toString()) : List.of("sh", dir.resolve("start.sh").toString());
 		List<String> refused;
@@ -239,6 +272,16 @@ public abstract class LibraryPackTestTask extends ClientStartupTask {
 		return game;
 	}
 
+	/** Every launch here names the edition the title screen and Options should show: the pack's while its list has anything on, else the edition below. */
+	@Override
+	protected List<String> launch(Path game, boolean linux, List<String> jvmArgs, List<String> failures) throws Exception {
+		Path list = game.resolve(LIST);
+		boolean anyOn = Files.isRegularFile(list) && Files.readAllLines(list).stream().anyMatch(l -> !l.isBlank());
+		List<String> all = new ArrayList<>(jvmArgs);
+		all.add("-Doldfaithful.selftest.edition=" + (anyOn ? getPackEdition().get() : getBaseEdition().get()));
+		return super.launch(game, linux, all, failures);
+	}
+
 	/** The launch arguments of the pack's own net.minecraft component, as Prism would add them, and these. */
 	private List<String> args(String... more) {
 		List<String> all = new ArrayList<>(packArgs);
@@ -254,15 +297,25 @@ public abstract class LibraryPackTestTask extends ClientStartupTask {
 		return found;
 	}
 
-	/** What the loader's mod list said: nothing of the library's, by id. */
-	private static boolean loadedNothing(List<String> output) {
-		return output.stream().noneMatch(l -> l.contains("- faithful-core ") || l.contains("- world-rules ") || l.contains("- water-bottles ") || l.contains("- blue-flowers ") || l.contains("- buried-towers ") || l.contains("- hearty-food ") || l.contains("- item-repair ") || l.contains("- alchemy ") || l.contains("- wild-saplings ")
-				|| l.contains("- explosive-arrows ") || l.contains("- plain-f3 ") || l.contains("- no-toasts ") || l.contains("- wary-creepers ") || l.contains("- wolf-packs "));
+	/** The core and every mod of the pack, by id, in order. */
+	private List<String> withCore() {
+		List<String> ids = new ArrayList<>(getPackMods().get());
+		ids.add("faithful-core");
+		ids.sort(null);
+		return ids;
 	}
 
-	private String allOn() throws IOException {
-		return String.join("\n", "mods-library/alchemy.jar", "mods-library/blue-flowers.jar", "mods-library/buried-towers.jar", "mods-library/explosive-arrows.jar", "mods-library/faithful-core.jar", "mods-library/hearty-food.jar", "mods-library/item-repair.jar", "mods-library/no-toasts.jar", "mods-library/plain-f3.jar",
-				"mods-library/wary-creepers.jar", "mods-library/water-bottles.jar", "mods-library/wild-saplings.jar", "mods-library/wolf-packs.jar", "mods-library/world-rules.jar", "");
+	/** What the loader's mod list said: nothing of the library's, by id. */
+	private boolean loadedNothing(List<String> output) {
+		List<String> ids = withCore();
+		return output.stream().noneMatch(l -> ids.stream().anyMatch(id -> l.contains("- " + id + " ")));
+	}
+
+	/** The list as the pack ships it: every mod on, the core too. */
+	private String allOn() {
+		StringBuilder list = new StringBuilder();
+		for (String id : withCore()) list.append("mods-library/").append(id).append(".jar\n");
+		return list.toString();
 	}
 
 	/** Joins from a game folder of its own with this list; what the client ended up looking at. */

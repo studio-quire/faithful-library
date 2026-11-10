@@ -132,6 +132,8 @@ public final class BottlesTest extends WorldTest {
 		check("and three in a row make none", crafted(0, 1, 2) == null);
 
 		set(2, -1, 0, Block.WATER);
+		// The client test fills from this cell later on, and in a cold biome beta's chunk tick turns still water open to the sky to ice: a block at the top of the world over it keeps it water.
+		world.setBlock(x + 2, 127, z, Block.STONE.id);
 		fillFrom("a bottle fills from still water", 2, -1, 0, true);
 		check("and the water isn't used up", block(2, -1, 0) == Block.WATER.id && meta(2, -1, 0) == 0);
 

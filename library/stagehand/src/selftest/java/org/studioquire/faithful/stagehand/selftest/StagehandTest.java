@@ -169,7 +169,13 @@ public final class StagehandTest extends WorldTest {
 	}
 
 	private void health() {
-		script("health", "health 5\nheal 3\n", r -> check("health and a little healing", player.health == 8));
+		// The steps read the health as they run. By the time the game's own is read here, a tick or two on, Peaceful may have healed a half-heart (beta does each second of a player's age),
+		// and a test server has no monsters, so it's on Peaceful.
+		script("health", "health 5\nheal 3\n", r -> {
+			check("health and a little healing: " + Scripts.data(r, 0).get("health") + " then " + Scripts.data(r, 1).get("health"),
+					number(Scripts.data(r, 0), "health") == 5 && number(Scripts.data(r, 1), "health") == 8);
+			check("and the game has it: " + player.health + " on difficulty " + world.difficulty, player.health == 8 || world.difficulty == 0 && player.health > 8);
+		});
 		script("heal", "heal\n", r -> check("heal", player.health == 20));
 	}
 

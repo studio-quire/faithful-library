@@ -2,14 +2,17 @@
 
 **optional mods for beta 1.7.3**
 
-Mods over [Old Faithful](https://github.com/studio-quire/old-faithful) and
-[Still Faithful](https://github.com/studio-quire/still-faithful), in any combination, in single player and on servers.
-A library pack comes with all of them on, and each has a switch; with every one off it plays exactly as its edition.
-Open source, from
+Mods for Minecraft beta 1.7.3 on Fabric, and Faithful Core, the API they're built on: for your own setup, and for writing
+mods of your own. Any combination works, in single player and on servers. Open source, from
 [Studio Quire](https://studioquire.org/).
 
-They're mods, not a modified game: your launcher downloads Minecraft itself from Mojang, with your own account. For
-Windows now.
+To play them all at once, each with its own switch, take [More Faithful](https://github.com/studio-quire/more-faithful):
+[Still Faithful](https://github.com/studio-quire/still-faithful) with every mod here on, one download to import into
+Prism Launcher. Through 0.4.0 this repository's releases held the packs: the one on Still Faithful is More Faithful now,
+and the one on Old Faithful has gone, as each pack now builds on the one before. For the mods without Still Faithful's
+changes, install them on their own in an [Old Faithful](https://github.com/studio-quire/old-faithful) instance (below).
+
+They're mods, not a modified game: your launcher downloads Minecraft itself from Mojang, with your own account.
 
 ## The mods
 
@@ -94,30 +97,21 @@ outside the game. Anything that can write to that folder can command the game, s
 library mod on never says anything new on the network. **Faithful Settings** is the settings screen they share, which
 Old and Still Faithful already have.
 
-## Download and play
+## Installing
 
-You need a Minecraft account that owns the game, and [Prism Launcher](https://prismlauncher.org/).
+The release has each mod's jar, `faithful-core` and `oldfaithful-settings` on their own. In a b1.7.3 Fabric (Babric)
+instance, put the mods you want in `.minecraft/mods`, with those two; Old and Still Faithful already have
+`oldfaithful-settings`. We test them on the three editions' mods; other setups are untested. Faithful Core declares that it
+doesn't run with StationAPI, so that combination stops at launch with a message.
 
-1. Download **OldFaithful-Library-&lt;version&gt;.zip** or **StillFaithful-Library-&lt;version&gt;.zip** from
-   [the latest release](https://github.com/studio-quire/faithful-library/releases).
-2. In Prism Launcher: **Add Instance > Import**, choose the zip (or paste the download link), **OK**.
-3. Launch it. Prism downloads beta 1.7.3 and its sounds from Mojang, and, if you let it, a Java 21 runtime.
-4. In the game: **Options > Old Faithful... > Mods...** (Still Faithful... in that pack). Each mod's page has an
-   **Enabled** switch, which takes effect the next time you launch.
-
-All the mods start on. Faithful Core comes on by itself when any mod is on, and goes off when none is. The jars are in
-`.minecraft/mods-library`, and the switches are kept in `.minecraft/mods-library/selection.txt`.
-
-There's no library pack for Pure Faithful, since Pure Faithful plus mods isn't Pure Faithful. Its mods can still run
-them, as anyone's own setup can (below).
+In an instance from More Faithful, or from the library's old packs, they're in `.minecraft/mods-library` instead, each
+with a switch in the game's settings, and named without their versions: to update one, replace its jar there with the
+new one under the old name (`alchemy-0.5.0.jar` becomes `alchemy.jar`), `faithful-core` included.
 
 ## Servers
 
-`OldFaithful-Library-server-<version>.zip` and `StillFaithful-Library-server-<version>.zip` are that edition's server
-package with the library's server-side mods on in `mods/`, as in the packs. So as they come they refuse a player without
-Water Bottles, Alchemy, Blue Flowers, Explosive Arrows and Buried Towers. Move out of `mods/` the jars you don't want, before the first start; `faithful-core` and
-`oldfaithful-settings` stay while any library mod does. With them all out it's the plain edition's server. The README inside
-says more.
+A server takes the server-side mods it wants in `mods/`, with `faithful-core` and `oldfaithful-settings`.
+[More Faithful](https://github.com/studio-quire/more-faithful)'s server package is Still Faithful's with all of them on.
 
 - **World Rules** runs where the world runs, so a server can use it with any client, vanilla beta 1.7.3 too. A server with
   it is the same to a player who hasn't got it, except that under Bows Wear Out their bow wears out with no bar to show
@@ -133,7 +127,7 @@ says more.
 - **Wolf Packs** runs where the world runs too, so a server can use it with any client, vanilla beta 1.7.3 too. With it
   on a server without it, wolves and creepers are beta's. A player without it feeds fish on a server with it all the same.
 - **Water Bottles**, **Alchemy**, **Blue Flowers**, **Explosive Arrows** and **Buried Towers** need every player to have them: the first four add blocks or items, and Buried Towers builds on the library's world generation, which needs it too. A server running one
-  refuses anyone without it, vanilla clients included, with a message saying so. A player on a library pack with any mod
+  refuses anyone without it, vanilla clients included, with a message saying so. A player on More Faithful with any mod
   on is offered **Match This Server's Mods**, which turns on what that server needs for their next launch. A client with
   them can join a server without them, where they can't be made and no towers are built.
 - **Plain F3** and **No Toasts** are the player's alone, on any server.
@@ -177,13 +171,6 @@ library's data in a chunk goes when that chunk is next saved. That data is what 
 a later mod adds blocks: as long as the core stays, blocks survive a removed mod, showing as the vanilla block they stand
 on, and return with it.
 
-## For existing setups
-
-The release has each mod's jar, `faithful-core` and `oldfaithful-settings` on their own. In a b1.7.3 Fabric (Babric)
-instance, put the mods you want in `.minecraft/mods`, with those two. We test them on the three editions' mods; other
-setups are untested. Faithful Core declares that it doesn't run with StationAPI, so that combination stops at launch with
-a message.
-
 ## Writing a mod
 
 [docs/library-authoring.md](docs/library-authoring.md) is the guide, and
@@ -197,9 +184,10 @@ Please [open an issue](https://github.com/studio-quire/faithful-library/issues) 
 
 ## Building
 
-This repository holds all of the library's source, and the editions' too. `./gw releaseLibrary` builds everything a release
-contains into `local/release/faithful-library-<version>/`; [docs/building.md](docs/building.md) and
-[docs/release.md](docs/release.md) say how. Inside, the project is called by its working name, `oldfaithful`.
+This repository holds all of the library's source, and the editions' too. `./gw releaseLibrary` builds the jars a release
+contains into `local/release/faithful-library-<version>/`, and `./gw releaseMore` More Faithful's pack;
+[docs/building.md](docs/building.md) and [docs/release.md](docs/release.md) say how. Inside, the project is called by its
+working name, `oldfaithful`.
 
 ## Credits and licence
 
@@ -207,8 +195,7 @@ Made by Claude Opus 5.5, an AI model by Anthropic, at Studio Quire. Claude Fable
 Alchemy's Ward, Haste and Feather Potions, designed Wary Creepers and Wolf Packs with Shoalstone, and drew the
 arrow's head and the golden flowers and feather. Idea, direction and play-testing: Shoalstone.
 
-The library's code is under the [MIT licence](LICENSE). The packs build on Fabric Loader, Mixin, ASM, Babric's mappings,
-LWJGL, SDL and OpenAL Soft, each under its own licence; the downloads carry their notices and licence texts, and the
-source code their licences ask for.
+The library's code is under the [MIT licence](LICENSE). It builds on Fabric Loader, Mixin and Babric's mappings, each
+under its own licence.
 
 Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.
