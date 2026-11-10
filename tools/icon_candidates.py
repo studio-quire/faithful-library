@@ -731,16 +731,11 @@ def still_seal(top_hue, bottom_hue, sat=0.5, light=1.0):
     return c07_beta((t, b, STILL_SILVER), glyph_tint=STILL_SILVER, shadow=shadow)
 
 
-# More Faithful's seal (the user's pick, 2026-11-10, of Claude Fable 5.2's round): a deep pine green with the rim and the
-# beta in gold, where the editions' are silver or white, so the packs built on Still Faithful read as a tier of their own.
-GOLD = (232, 200, 120)
-
-
-def gold_hue_seal(hue, sat, light):
-    top, bottom, _ = BETA_PURE
-    shadow = tuple(round(v * 255) for v in colorsys.hls_to_rgb(hue / 360, 0.07, 0.5))
-    return c07_beta((matched(hue, sat, top, light), matched(hue, sat * 1.05, bottom, light), GOLD), glyph_tint=GOLD,
-                    shadow=shadow)
+# More Faithful's seal (the user's pick, 2026-11-10, of Claude Fable 5.2's rounds): crimson, with the silver rim and beta
+# of Old and Still Faithful. The first warm seal, where the ladder goes from beta itself to beta with more in it. It sits
+# a little deeper than the first three: a red as light as Pure's blue is salmon.
+def more_seal():
+    return still_seal(355, 355, 0.6, 0.68)
 
 
 def stills_section():
@@ -910,8 +905,8 @@ def main(argv=None):
     still = still_seal(*next((t, b) for key, _, t, b, _ in STILLS if key == "a")).image()
     for size in (32, 64, 128, 256, 512):
         still.resize((size, size), Image.NEAREST).save(final / f"stillfaithful-{size}.png", optimize=True)
-    # More Faithful's: pine and gold (above).
-    more = gold_hue_seal(150, 0.5, 0.55).image()
+    # More Faithful's: crimson (above).
+    more = more_seal().image()
     for size in (32, 64, 128, 256, 512):
         more.resize((size, size), Image.NEAREST).save(final / f"morefaithful-{size}.png", optimize=True)
     current = next((p for p in (ROOT / "prism" / "release" / n for n in ("purefaithful.png", "oldfaithful.png"))
